@@ -1,0 +1,81 @@
+using NetLah.Diagnostics;
+using NetLah.Extensions.HttpOverrides;
+using NetLah.Extensions.Logging;
+using SampleWebApi;
+
+AppLog.InitLogger();
+AppLog.Logger.LogInformation("Application configure...");
+try
+{
+    var appInfo = ApplicationInfo.Initialize(null);
+    var builder = WebApplication.CreateBuilder(args);
+    builder.Services.AddSingleton<IAssemblyInfo>(appInfo);
+
+    builder.UseSerilog(logger => LogAppEvent(logger, "Application initializing...", appInfo));
+    var logger = AppLog.Logger;
+
+    // Add services to the container.
+
+    builder.Services.AddControllers();
+
+    if (builder.Environment.IsDevelopment())
+    {
+        // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+        builder.Services.AddEndpointsApiExplorer();
+        builder.Services.AddSwaggerGen();
+    }
+
+    builder.Services.AddHealthChecks();     // Registers health checks services
+
+    builder.Services.AddHttpOverrides(builder.Configuration);
+
+    builder.Services.AddHttpContextAccessor();
+    builder.Services.AddScoped<HttpContextInfo>();
+
+    var app = builder.Build();
+
+    logger.LogInformation("Environment: {environmentName}; DeveloperMode:{isDevelopment}", app.Environment.EnvironmentName, app.Environment.IsDevelopment());
+
+    app.UseHttpOverrides(logger);
+
+    // Configure the HTTP request pipeline.
+    if (app.Environment.IsDevelopment())
+    {
+        app.UseSwagger();
+        app.UseSwaggerUI();
+    }
+    else
+    {
+        // todo1
+    }
+
+    app.UseHealthChecks("/healthz");
+
+    // app.UseHttpsRedirection()
+
+    app.UseStatusCodePages();
+
+    app.UseStaticFiles();
+
+    app.UseAuthorization();
+
+    app.MapControllers();
+
+    app.Lifetime.ApplicationStarted.Register(() => LogAppEvent(logger, "ApplicationStarted", appInfo));
+    app.Lifetime.ApplicationStopping.Register(() => LogAppEvent(logger, "ApplicationStopping", appInfo));
+    app.Lifetime.ApplicationStopped.Register(() => LogAppEvent(logger, "ApplicationStopped", appInfo));
+    app.Logger.LogInformation("Finished configuring application");
+    app.Run();
+
+    static void LogAppEvent(ILogger logger, string appEvent, IAssemblyInfo appInfo)
+        => logger.LogInformation("{ApplicationEvent} App:{title}; Version:{version} BuildTime:{buildTime}; Framework:{framework}",
+        appEvent, appInfo.Title, appInfo.InformationalVersion, appInfo.BuildTimestampLocal, appInfo.FrameworkName);
+}
+catch (Exception ex)
+{
+    AppLog.Logger.LogCritical(ex, "Application terminated unexpectedly");
+}
+finally
+{
+    Serilog.Log.CloseAndFlush();
+}

@@ -1,0 +1,25 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <PackageId>NetLah.Extensions.HttpOverrides</PackageId>
+    <PackageTags>httpoverrides;http-overrides;configurable;aspnetcore;dotnet;netcore</PackageTags>
+    <TargetFramework>net6.0</TargetFramework>
+    <Description>Library support setting ASP.NET Core HttpOverrides from configuration</Description>
+    <SignAssembly>true</SignAssembly>
+    <AssemblyOriginatorKeyFile>../../NetLah.snk</AssemblyOriginatorKeyFile>
+    <RootNamespace>NetLah.Extensions.HttpOverrides</RootNamespace>
+    <AssemblyName>NetLah.Extensions.HttpOverrides</AssemblyName>
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="..\..\LICENSE" Pack="true" PackagePath="\" />
+    <None Include="..\..\README.md" Pack="true" PackagePath="\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+</Project>
