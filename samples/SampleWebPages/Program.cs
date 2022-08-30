@@ -1,0 +1,64 @@
+using NetLah.Diagnostics;
+using NetLah.Extensions.HttpOverrides;
+using NetLah.Extensions.Logging;
+
+AppLog.InitLogger();
+AppLog.Logger.LogInformation("Application configure...");
+try
+{
+    var appInfo = ApplicationInfo.Initialize(null);
+    var builder = WebApplication.CreateBuilder(args);
+    builder.Services.AddSingleton<IAssemblyInfo>(appInfo);
+
+    builder.UseSerilog(logger => LogAppEvent(logger, "Application initializing...", appInfo));
+    var logger = AppLog.Logger;
+
+    // Add services to the container.
+    builder.Services.AddRazorPages();
+
+
+    builder.Services.AddHealthChecks();     // Registers health checks services
+
+    builder.Services.AddHttpOverrides(builder.Configuration);
+
+    var app = builder.Build();
+
+    logger.LogInformation("Environment: {environmentName}; DeveloperMode:{isDevelopment}", app.Environment.EnvironmentName, app.Environment.IsDevelopment());
+
+    app.UseHttpOverrides(logger);
+
+    // Configure the HTTP request pipeline.
+    if (!app.Environment.IsDevelopment())
+    {
+        app.UseExceptionHandler("/Error");
+        // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
+        app.UseHsts();
+    }
+
+    app.UseHttpsRedirection();
+    app.UseStaticFiles();
+
+    app.UseRouting();
+
+    app.UseAuthorization();
+
+    app.MapRazorPages();
+
+    app.Lifetime.ApplicationStarted.Register(() => LogAppEvent(logger, "ApplicationStarted", appInfo));
+    app.Lifetime.ApplicationStopping.Register(() => LogAppEvent(logger, "ApplicationStopping", appInfo));
+    app.Lifetime.ApplicationStopped.Register(() => LogAppEvent(logger, "ApplicationStopped", appInfo));
+    app.Logger.LogInformation("Finished configuring application");
+    app.Run();
+
+    static void LogAppEvent(ILogger logger, string appEvent, IAssemblyInfo appInfo)
+        => logger.LogInformation("{ApplicationEvent} App:{title}; Version:{version} BuildTime:{buildTime}; Framework:{framework}",
+        appEvent, appInfo.Title, appInfo.InformationalVersion, appInfo.BuildTimestampLocal, appInfo.FrameworkName);
+}
+catch (Exception ex)
+{
+    AppLog.Logger.LogCritical(ex, "Application terminated unexpectedly");
+}
+finally
+{
+    Serilog.Log.CloseAndFlush();
+}
