@@ -86,6 +86,12 @@ public static class HttpOverridesExtensions
             logger.LogInformation("HostFiltering: {@hostFiltering}", hostFiltering);
         }
 
+        if (_isForwardedHeadersEnabled)
+        {
+            var bypassNetLahHttpOverridesMessage = $"Bypass HttpOverrides configuration settings because {Config.AspNetCoreForwardedHeadersEnabledKey} is True";
+            logger.LogInformation(bypassNetLahHttpOverridesMessage);
+        }
+
         if (fho.KnownProxies.Count > 0 || fho.KnownNetworks.Count > 0 || fho.ForwardedHeaders != ForwardedHeaders.None)
         {
             logger.LogInformation("ForwardLimit: {forwardLimit}", fho.ForwardLimit);

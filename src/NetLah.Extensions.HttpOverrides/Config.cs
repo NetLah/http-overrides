@@ -5,7 +5,10 @@ public static class Config
     public const string HttpOverridesKey = "HttpOverrides";
     public const string HttpLoggingKey = "HttpLogging";
 
-    public const string AspNetCoreForwardedHeadersEnabledKey = "ASPNETCORE_FORWARDEDHEADERS_ENABLED";
+    /// <summary>
+    /// Setttings ASPNETCORE_FORWARDEDHEADERS_ENABLED
+    /// </summary>
+    public const string AspNetCoreForwardedHeadersEnabledKey = "ForwardedHeaders_Enabled";
     
     public const string ClearForwardLimitKey = "ClearForwardLimit";
 

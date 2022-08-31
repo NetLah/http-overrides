@@ -32,6 +32,12 @@ builder.Services.AddHttpOverrides(builder.Configuration);
 app.UseHttpOverrides(logger);
 ```
 
+## Overrided by ASPNETCORE_FORWARDEDHEADERS_ENABLED
+
+This HttpOverrides will check configuration ASPNETCORE_FORWARDEDHEADERS_ENABLED or ForwardedHeaders_Enabled not turned on to not override default behavior of ASP.NETCore.
+
+Reference [ForwardedHeadersOptionsSetup.cs](https://github.com/dotnet/aspnetcore/blob/main/src/DefaultBuilder/src/ForwardedHeadersOptionsSetup.cs)
+
 ## Sample and default configuration
 
 ```json
