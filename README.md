@@ -56,7 +56,7 @@ Reference [ForwardedHeadersOptionsSetup.cs](https://github.com/dotnet/aspnetcore
     "OriginalHostHeaderName": "X-Original-Host",
     "OriginalProtoHeaderName": "X-Original-Proto",
     "ForwardedHeaders": "", // XForwardedFor,XForwardedHost,XForwardedProto
-    "AllowedHosts": "" // "*""
+    "AllowedHosts": "" // "*"
   }
 }
 ```
