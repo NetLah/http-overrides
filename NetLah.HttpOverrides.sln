@@ -15,6 +15,9 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{D75FDEA6-4C00-4AE4-BD20-49615C9C4576}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{A1EB77A7-80E1-4FDF-A19E-6307E6422856}"
+	ProjectSection(SolutionItems) = preProject
+		src\Directory.Build.targets = src\Directory.Build.targets
+	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{D82DACED-E5CC-4387-A91D-76D4BE049650}"
 EndProject
@@ -24,7 +27,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NetLah.Extensions.HttpOverr
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NetLah.Extensions.HttpOverrides.Test", "test\NetLah.Extensions.HttpOverrides.Test\NetLah.Extensions.HttpOverrides.Test.csproj", "{43A41421-5C89-47FD-A86D-7E29F6EF4229}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SampleWebPages", "samples\SampleWebPages\SampleWebPages.csproj", "{490BB39D-1255-4178-9198-1BAE4035456E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SampleWebPages", "samples\SampleWebPages\SampleWebPages.csproj", "{490BB39D-1255-4178-9198-1BAE4035456E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

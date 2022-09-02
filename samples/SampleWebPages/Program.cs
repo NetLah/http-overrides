@@ -4,6 +4,7 @@ using NetLah.Extensions.Logging;
 
 AppLog.InitLogger();
 AppLog.Logger.LogInformation("Application configure...");
+
 try
 {
     var appInfo = ApplicationInfo.Initialize(null);
@@ -16,7 +17,6 @@ try
     // Add services to the container.
     builder.Services.AddRazorPages();
 
-
     builder.Services.AddHealthChecks();     // Registers health checks services
 
     builder.Services.AddHttpOverrides(builder.Configuration);
@@ -25,7 +25,7 @@ try
 
     logger.LogInformation("Environment: {environmentName}; DeveloperMode:{isDevelopment}", app.Environment.EnvironmentName, app.Environment.IsDevelopment());
 
-    app.UseHttpOverrides(logger);
+    app.UseHttpOverrides(null);
 
     // Configure the HTTP request pipeline.
     if (!app.Environment.IsDevelopment())

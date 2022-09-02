@@ -5,6 +5,7 @@ using SampleWebApi;
 
 AppLog.InitLogger();
 AppLog.Logger.LogInformation("Application configure...");
+
 try
 {
     var appInfo = ApplicationInfo.Initialize(null);
@@ -36,7 +37,7 @@ try
 
     logger.LogInformation("Environment: {environmentName}; DeveloperMode:{isDevelopment}", app.Environment.EnvironmentName, app.Environment.IsDevelopment());
 
-    app.UseHttpOverrides(logger);
+    app.UseHttpOverrides();
 
     // Configure the HTTP request pipeline.
     if (app.Environment.IsDevelopment())

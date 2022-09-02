@@ -6,11 +6,13 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
+using NetLah.Extensions.Logging;
 
 namespace NetLah.Extensions.HttpOverrides;
 
 public static class HttpOverridesExtensions
 {
+    private static readonly Lazy<ILogger?> _loggerLazy = new(() => AppLogReference.GetAppLogLogger(typeof(HttpOverridesExtensions).Namespace));
     private static bool _isForwardedHeadersEnabled;
     private static bool _isHttpLoggingEnabled;
 
@@ -73,8 +75,9 @@ public static class HttpOverridesExtensions
         return services;
     }
 
-    public static IApplicationBuilder UseHttpOverrides(this IApplicationBuilder app, ILogger? logger)
+    public static IApplicationBuilder UseHttpOverrides(this IApplicationBuilder app, ILogger? logger = null)
     {
+        logger ??= _loggerLazy.Value;
         logger ??= NullLogger.Instance;
         var sp = app.ApplicationServices;
         var optionsForwardedHeadersOptions = sp.GetRequiredService<IOptions<ForwardedHeadersOptions>>();
@@ -89,7 +92,9 @@ public static class HttpOverridesExtensions
         if (_isForwardedHeadersEnabled)
         {
             var bypassNetLahHttpOverridesMessage = $"Bypass HttpOverrides configuration settings because {Config.AspNetCoreForwardedHeadersEnabledKey} is True";
+#pragma warning disable CA2254 // Template should be a static expression
             logger.LogInformation(bypassNetLahHttpOverridesMessage);
+#pragma warning restore CA2254 // Template should be a static expression
         }
 
         if (fho.KnownProxies.Count > 0 || fho.KnownNetworks.Count > 0 || fho.ForwardedHeaders != ForwardedHeaders.None)
