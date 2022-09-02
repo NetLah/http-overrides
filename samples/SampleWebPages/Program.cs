@@ -25,7 +25,7 @@ try
 
     logger.LogInformation("Environment: {environmentName}; DeveloperMode:{isDevelopment}", app.Environment.EnvironmentName, app.Environment.IsDevelopment());
 
-    app.UseHttpOverrides(null);
+    app.UseHttpOverrides();
 
     // Configure the HTTP request pipeline.
     if (!app.Environment.IsDevelopment())
