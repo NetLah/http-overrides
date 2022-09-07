@@ -25,10 +25,21 @@ public static class HttpOverridesExtensions
     public static IServiceCollection AddHttpOverrides(this IServiceCollection services, IConfiguration configuration,
         string httpOverridesSectionName = Config.HttpOverridesKey, string httpLoggingSectionName = Config.HttpLoggingKey)
     {
+        ILogger? logger =null;
+
+        void EnsureLogger()
+        {
+            logger ??= _loggerLazy.Value;
+            logger ??= NullLogger.Instance;
+        }
+
         _isForwardedHeadersEnabled = configuration[Config.AspNetCoreForwardedHeadersEnabledKey].IsTrue();
 
         if (!_isForwardedHeadersEnabled)
         {
+            EnsureLogger();
+            logger?.LogDebug("Attempt to load ForwardedHeadersOptions from configuration");
+
             var httpOverridesConfigurationSection = string.IsNullOrEmpty(httpOverridesSectionName) ? configuration : configuration.GetSection(httpOverridesSectionName);
             services.Configure<ForwardedHeadersOptions>(httpOverridesConfigurationSection);
 
@@ -50,6 +61,9 @@ public static class HttpOverridesExtensions
 
         if (_isHttpLoggingEnabled)
         {
+            EnsureLogger();
+            logger?.LogDebug("Attempt to load HttpLoggingOptions from configuration");
+
             var httpLoggingConfigurationSection = string.IsNullOrEmpty(httpLoggingSectionName) ? configuration : configuration.GetSection(httpLoggingSectionName);
             services.Configure<HttpLoggingOptions>(httpLoggingConfigurationSection);
             var isClearRequestHeaders = httpLoggingConfigurationSection[Config.ClearRequestHeadersKey].IsTrue();
