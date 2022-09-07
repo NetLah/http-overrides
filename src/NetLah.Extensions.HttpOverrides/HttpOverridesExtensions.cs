@@ -16,6 +16,12 @@ public static class HttpOverridesExtensions
     private static bool _isForwardedHeadersEnabled;
     private static bool _isHttpLoggingEnabled;
 
+    public static WebApplicationBuilder AddHttpOverrides(this WebApplicationBuilder webApplicationBuilder, string httpOverridesSectionName = Config.HttpOverridesKey, string httpLoggingSectionName = Config.HttpLoggingKey)
+    {
+        webApplicationBuilder.Services.AddHttpOverrides(webApplicationBuilder.Configuration, httpOverridesSectionName, httpLoggingSectionName);
+        return webApplicationBuilder;
+    }
+
     public static IServiceCollection AddHttpOverrides(this IServiceCollection services, IConfiguration configuration,
         string httpOverridesSectionName = Config.HttpOverridesKey, string httpLoggingSectionName = Config.HttpLoggingKey)
     {

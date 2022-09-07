@@ -28,7 +28,7 @@ try
 
     builder.Services.AddHealthChecks();     // Registers health checks services
 
-    builder.Services.AddHttpOverrides(builder.Configuration);
+    builder.AddHttpOverrides();
 
     builder.Services.AddHttpContextAccessor();
     builder.Services.AddScoped<HttpContextInfo>();
