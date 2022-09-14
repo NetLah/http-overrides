@@ -17,6 +17,7 @@
     <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" />
     <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" />
     <PackageReference Include="NetLah.Abstractions" />
+    <PackageReference Include="NetLah.AssemblyInfo.Build.Targets" PrivateAssets="All" />
     <PackageReference Include="NetLah.Extensions.Configuration" />
     <PackageReference Include="NetLah.Extensions.Logging.Serilog.AspNetCore" />
     <PackageReference Include="Serilog" />
