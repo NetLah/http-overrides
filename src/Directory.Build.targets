@@ -19,7 +19,7 @@
 
     <!--the helpers -->
     <PackageReference Update="NetLah.Abstractions" Version="[0.2.0,1)" />
-    <PackageReference Include="NetLah.AssemblyInfo.BuildTime.Target" Version="[0.2.0-rc1,1)" PrivateAssets="All" />
+    <PackageReference Include="NetLah.AssemblyInfo.BuildTime.Target" Version="[0.*-*,1)" PrivateAssets="All" />
     <PackageReference Update="NetLah.Extensions.Configuration" Version="[0.2.0,1)" />
     <PackageReference Update="NetLah.Extensions.EventAggregator" Version="[0.2.0,1)" />
     <PackageReference Update="NetLah.Extensions.HttpOverrides" Version="[0.2.0,1)" />
@@ -124,8 +124,8 @@
     <PackageReference Update="System.Drawing.Common" Version="$(FrameworkBaselineVersion)" />
     <PackageReference Update="System.Net.Http.Json" Version="$(FrameworkBaselineVersion)" />
     <PackageReference Update="System.Text.Encoding.CodePages" Version="$(FrameworkBaselineVersion)" />
-    <PackageReference Update="System.Text.Json" Condition="'$(TargetFramework)' == 'net5.0'" Version="5.*" />
-    <PackageReference Update="System.Text.Json" Condition="'$(TargetFramework)' != 'net5.0'" Version="6.*" />
+    <PackageReference Update="System.Text.Json" Condition="'$(TargetFramework)' == 'net5.0'" Version="5.0.0" />
+    <PackageReference Update="System.Text.Json" Condition="'$(TargetFramework)' != 'net5.0'" Version="6.0.0" />
 
     <!--microsoft asp.net core-->
     <PackageReference Update="Microsoft.AspNetCore.Authentication.Facebook" Version="$(FrameworkBaselineVersion)" />
