@@ -47,7 +47,7 @@ Reference [ForwardedHeadersOptionsSetup.cs](https://github.com/dotnet/aspnetcore
     "ClearKnownProxies": false,
     "ClearKnownNetworks": false,
     "ForwardLimit": 1,
-    "KnownNetworks": "::1",
+    "KnownProxies": "::1",
     "KnownNetworks": "127.0.0.1/8",
     "ForwardedForHeaderName": "X-Forwarded-For",
     "ForwardedHostHeaderName": "X-Forwarded-Host",
