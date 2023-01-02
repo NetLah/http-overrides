@@ -2,13 +2,14 @@
 
   <PropertyGroup>
     <CurrentFrameworkVersion>6.0.12</CurrentFrameworkVersion>
-    <FrameworkBaselineVersion Condition="'$(TargetFramework)' != 'net5.0' And '$(TargetFramework)' != 'net6.0' And '$(TargetFramework)' != 'net7.0'">3.1.0</FrameworkBaselineVersion>
+    <FrameworkBaselineVersion Condition="'$(TargetFramework)' != 'net5.0' And '$(TargetFramework)' != 'net6.0' And '$(TargetFramework)' != 'net7.0' And '$(TargetFramework)' != 'net6.0-windows'">3.1.0</FrameworkBaselineVersion>
     <FrameworkBaselineVersion Condition="'$(TargetFramework)' == 'net5.0'">5.0.0</FrameworkBaselineVersion>
-    <FrameworkBaselineVersion Condition="'$(TargetFramework)' == 'net6.0'">6.0.0</FrameworkBaselineVersion>
+    <FrameworkBaselineVersion Condition="'$(TargetFramework)' == 'net6.0' Or '$(TargetFramework)' == 'net6.0-windows'">6.0.0</FrameworkBaselineVersion>
     <FrameworkBaselineVersion Condition="'$(TargetFramework)' == 'net7.0'">7.0.0</FrameworkBaselineVersion>
-    <SystemTextJsonVersion Condition="'$(TargetFramework)' != 'net6.0' And '$(TargetFramework)' != 'net7.0'">5.0.0</SystemTextJsonVersion>
-    <SystemTextJsonVersion Condition="'$(TargetFramework)' == 'net6.0' Or '$(TargetFramework)' == 'net7.0'">$(FrameworkBaselineVersion)</SystemTextJsonVersion>
-    <SwashbuckleVersion>6.0.0</SwashbuckleVersion>
+    <SystemTextJsonVersion Condition="'$(TargetFramework)' != 'net6.0' And '$(TargetFramework)' != 'net7.0' And '$(TargetFramework)' != 'net6.0-windows'">5.0.0</SystemTextJsonVersion>
+    <SystemTextJsonVersion Condition="'$(TargetFramework)' == 'net6.0' Or '$(TargetFramework)' == 'net7.0' Or '$(TargetFramework)' == 'net6.0-windows'">$(FrameworkBaselineVersion)</SystemTextJsonVersion>
+    <SwashbuckleVersion Condition="'$(TargetFramework)' != 'net6.0' And '$(TargetFramework)' != 'net7.0'">5.*</SwashbuckleVersion>
+    <SwashbuckleVersion Condition="'$(TargetFramework)' == 'net6.0' Or '$(TargetFramework)' == 'net7.0'">6.*</SwashbuckleVersion>
   </PropertyGroup>
 
   <ItemGroup>
@@ -18,15 +19,15 @@
     <PackageReference Update="Microsoft.SourceLink.GitHub" Version="1.*" PrivateAssets="All" />
 
     <!--the helpers -->
-    <PackageReference Update="NetLah.Abstractions" Version="[0.2.0,1)" />
-    <PackageReference Include="NetLah.AssemblyInfo.BuildTime.Target" Version="[0.*-*,1)" PrivateAssets="All" />
+    <PackageReference Update="NetLah.Abstractions" Version="[0.2.1,1)" />
+    <PackageReference Include="NetLah.AssemblyInfo.BuildTime.Target" Version="[0.2.0,1)" PrivateAssets="All" />
     <PackageReference Update="NetLah.Extensions.CommandLineUtils" Version="0.1.0-a1.2" />
-    <PackageReference Update="NetLah.Extensions.Configuration" Version="[0.2.0,1)" />
+    <PackageReference Update="NetLah.Extensions.Configuration" Version="[0.2.2,1)" />
     <PackageReference Update="NetLah.Extensions.EventAggregator" Version="[0.2.0,1)" />
-    <PackageReference Update="NetLah.Extensions.HttpOverrides" Version="[0.2.0,1)" />
-    <PackageReference Update="NetLah.Extensions.Logging.Reference" Version="[0.2.3,1)" />
-    <PackageReference Update="NetLah.Extensions.Logging.Serilog" Version="[0.2.1,1)" />
-    <PackageReference Update="NetLah.Extensions.Logging.Serilog.AspNetCore" Version="[0.2.1,1)" />
+    <PackageReference Update="NetLah.Extensions.HttpOverrides" Version="[0.2.1,1)" />
+    <PackageReference Update="NetLah.Extensions.Logging.Reference" Version="[0.2.4,1)" />
+    <PackageReference Update="NetLah.Extensions.Logging.Serilog" Version="[0.2.4,1)" />
+    <PackageReference Update="NetLah.Extensions.Logging.Serilog.AspNetCore" Version="[0.2.4,1)" />
     <PackageReference Update="NetLah.Extensions.SpaServices.Hosting" Version="[0.1.0-rc2,1)" />
     <PackageReference Update="Testing.Dynamic.Json" Version="1.*-*" />
 
@@ -129,6 +130,7 @@
     <PackageReference Update="System.Text.Json" Version="$(SystemTextJsonVersion)" />
 
     <!--microsoft asp.net core-->
+    <PackageReference Update="Microsoft.AspNetCore.Authentication.Certificate" Version="$(FrameworkBaselineVersion)" />
     <PackageReference Update="Microsoft.AspNetCore.Authentication.Facebook" Version="$(FrameworkBaselineVersion)" />
     <PackageReference Update="Microsoft.AspNetCore.Authentication.Google" Version="$(FrameworkBaselineVersion)" />
     <PackageReference Update="Microsoft.AspNetCore.Authentication.JwtBearer" Version="$(FrameworkBaselineVersion)" />
@@ -156,21 +158,21 @@
     <PackageReference Update="EFCore.NamingConventions" Version="$(FrameworkBaselineVersion)" />
 
     <!--azure-->
-    <PackageReference Update="Azure.Containers.ContainerRegistry" Version="1.*-*" />
-    <PackageReference Update="Azure.Core" Version="1.*" />
-    <PackageReference Update="Azure.Core.Amqp" Version="1.*" />
-    <PackageReference Update="Azure.Extensions.AspNetCore.DataProtection.Blobs" Version="1.*" />
-    <PackageReference Update="Azure.Extensions.AspNetCore.DataProtection.Keys" Version="1.*" />
-    <PackageReference Update="Azure.Identity" Version="1.*" />
-    <PackageReference Update="Azure.Messaging.ServiceBus" Version="7.*" />
-    <PackageReference Update="Azure.Security.KeyVault.Certificates" Version="4.*" />
-    <PackageReference Update="Azure.Security.KeyVault.Keys" Version="4.*" />
-    <PackageReference Update="Azure.Security.KeyVault.Secrets" Version="4.*" />
-    <PackageReference Update="Azure.Storage.Blobs" Version="12.*" />
-    <PackageReference Update="Microsoft.ApplicationInsights.AspNetCore" Version="2.*" />
-    <PackageReference Update="Microsoft.Azure.Cosmos" Version="3.*" />
-    <PackageReference Update="Microsoft.Extensions.Caching.Cosmos" Version="1.*" />
-    <PackageReference Update="Microsoft.Extensions.Logging.ApplicationInsights" Version="2.*" />
+    <PackageReference Update="Azure.Containers.ContainerRegistry" Version="1.0.0" />
+    <PackageReference Update="Azure.Core" Version="1.0.0" />
+    <PackageReference Update="Azure.Core.Amqp" Version="1.0.0" />
+    <PackageReference Update="Azure.Extensions.AspNetCore.DataProtection.Blobs" Version="1.0.0" />
+    <PackageReference Update="Azure.Extensions.AspNetCore.DataProtection.Keys" Version="1.0.0" />
+    <PackageReference Update="Azure.Identity" Version="1.0.0" />
+    <PackageReference Update="Azure.Messaging.ServiceBus" Version="7.0.0" />
+    <PackageReference Update="Azure.Security.KeyVault.Certificates" Version="4.0.0" />
+    <PackageReference Update="Azure.Security.KeyVault.Keys" Version="4.0.0" />
+    <PackageReference Update="Azure.Security.KeyVault.Secrets" Version="4.0.0" />
+    <PackageReference Update="Azure.Storage.Blobs" Version="12.0.0" />
+    <PackageReference Update="Microsoft.ApplicationInsights.AspNetCore" Version="2.0.0" />
+    <PackageReference Update="Microsoft.Azure.Cosmos" Version="3.20.1" />
+    <PackageReference Update="Microsoft.Extensions.Caching.Cosmos" Version="1.0.0" />
+    <PackageReference Update="Microsoft.Extensions.Logging.ApplicationInsights" Version="2.0.0" />
 
     <!--azure deprecated-->
     <!--<PackageReference Update="Microsoft.Azure.ServiceBus" Version="5.*" />-->
