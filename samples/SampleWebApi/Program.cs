@@ -19,12 +19,10 @@ try
 
     builder.Services.AddControllers();
 
-    if (builder.Environment.IsDevelopment())
-    {
-        // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-        builder.Services.AddEndpointsApiExplorer();
-        builder.Services.AddSwaggerGen();
-    }
+    // this dependency required by Microsoft.Extensions.ApiDescription.Server.targets
+    // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+    builder.Services.AddEndpointsApiExplorer();
+    builder.Services.AddSwaggerGen();
 
     builder.Services.AddHealthChecks();     // Registers health checks services
 

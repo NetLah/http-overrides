@@ -4,7 +4,6 @@
     <TargetFrameworks>net7.0;net6.0</TargetFrameworks>
     <UserSecretsId>netlah-http-overrides-ed3g</UserSecretsId>
     <IsPackable>false</IsPackable>
-    <OpenApiGenerateDocumentsOnBuild>false</OpenApiGenerateDocumentsOnBuild>
   </PropertyGroup>
 
   <ItemGroup>
