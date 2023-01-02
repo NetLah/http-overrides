@@ -8,8 +8,8 @@
     <FrameworkBaselineVersion Condition="'$(TargetFramework)' == 'net7.0'">7.0.0</FrameworkBaselineVersion>
     <SystemTextJsonVersion Condition="'$(TargetFramework)' != 'net6.0' And '$(TargetFramework)' != 'net7.0' And '$(TargetFramework)' != 'net6.0-windows'">5.0.0</SystemTextJsonVersion>
     <SystemTextJsonVersion Condition="'$(TargetFramework)' == 'net6.0' Or '$(TargetFramework)' == 'net7.0' Or '$(TargetFramework)' == 'net6.0-windows'">$(FrameworkBaselineVersion)</SystemTextJsonVersion>
-    <SwashbuckleVersion Condition="'$(TargetFramework)' != 'net6.0' And '$(TargetFramework)' != 'net7.0'">5.*</SwashbuckleVersion>
-    <SwashbuckleVersion Condition="'$(TargetFramework)' == 'net6.0' Or '$(TargetFramework)' == 'net7.0'">6.*</SwashbuckleVersion>
+    <SwashbuckleVersion Condition="'$(TargetFramework)' != 'net6.0' And '$(TargetFramework)' != 'net7.0'">5.0.0</SwashbuckleVersion>
+    <SwashbuckleVersion Condition="'$(TargetFramework)' == 'net6.0' Or '$(TargetFramework)' == 'net7.0'">6.0.0</SwashbuckleVersion>
   </PropertyGroup>
 
   <ItemGroup>
@@ -24,7 +24,7 @@
     <PackageReference Update="NetLah.Extensions.CommandLineUtils" Version="0.1.0-a1.2" />
     <PackageReference Update="NetLah.Extensions.Configuration" Version="[0.2.2,1)" />
     <PackageReference Update="NetLah.Extensions.EventAggregator" Version="[0.2.0,1)" />
-    <PackageReference Update="NetLah.Extensions.HttpOverrides" Version="[0.2.1,1)" />
+    <PackageReference Update="NetLah.Extensions.HttpOverrides" Version="[0.2.2,1)" />
     <PackageReference Update="NetLah.Extensions.Logging.Reference" Version="[0.2.4,1)" />
     <PackageReference Update="NetLah.Extensions.Logging.Serilog" Version="[0.2.4,1)" />
     <PackageReference Update="NetLah.Extensions.Logging.Serilog.AspNetCore" Version="[0.2.4,1)" />
