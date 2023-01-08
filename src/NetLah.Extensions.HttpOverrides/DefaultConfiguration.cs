@@ -1,6 +1,6 @@
 ﻿namespace NetLah.Extensions.HttpOverrides;
 
-public static class Config
+public static class DefaultConfiguration
 {
     public const string HttpOverridesKey = "HttpOverrides";
     public const string HttpLoggingKey = "HttpLogging";

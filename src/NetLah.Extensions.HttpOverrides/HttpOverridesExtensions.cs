@@ -16,16 +16,16 @@ public static class HttpOverridesExtensions
     private static bool _isForwardedHeadersEnabled;
     private static bool _isHttpLoggingEnabled;
 
-    public static WebApplicationBuilder AddHttpOverrides(this WebApplicationBuilder webApplicationBuilder, string httpOverridesSectionName = Config.HttpOverridesKey, string httpLoggingSectionName = Config.HttpLoggingKey)
+    public static WebApplicationBuilder AddHttpOverrides(this WebApplicationBuilder webApplicationBuilder, string httpOverridesSectionName = DefaultConfiguration.HttpOverridesKey, string httpLoggingSectionName = DefaultConfiguration.HttpLoggingKey)
     {
         webApplicationBuilder.Services.AddHttpOverrides(webApplicationBuilder.Configuration, httpOverridesSectionName, httpLoggingSectionName);
         return webApplicationBuilder;
     }
 
     public static IServiceCollection AddHttpOverrides(this IServiceCollection services, IConfiguration configuration,
-        string httpOverridesSectionName = Config.HttpOverridesKey, string httpLoggingSectionName = Config.HttpLoggingKey)
+        string httpOverridesSectionName = DefaultConfiguration.HttpOverridesKey, string httpLoggingSectionName = DefaultConfiguration.HttpLoggingKey)
     {
-        ILogger? logger =null;
+        ILogger? logger = null;
 
         void EnsureLogger()
         {
@@ -33,7 +33,7 @@ public static class HttpOverridesExtensions
             logger ??= NullLogger.Instance;
         }
 
-        _isForwardedHeadersEnabled = configuration[Config.AspNetCoreForwardedHeadersEnabledKey].IsTrue();
+        _isForwardedHeadersEnabled = configuration[DefaultConfiguration.AspNetCoreForwardedHeadersEnabledKey].IsTrue();
 
         if (!_isForwardedHeadersEnabled)
         {
@@ -45,7 +45,7 @@ public static class HttpOverridesExtensions
 
             services.Configure<ForwardedHeadersOptions>(options =>
             {
-                if (httpOverridesConfigurationSection[Config.ClearForwardLimitKey].IsTrue())
+                if (httpOverridesConfigurationSection[DefaultConfiguration.ClearForwardLimitKey].IsTrue())
                 {
                     options.ForwardLimit = null;
                 }
@@ -56,7 +56,7 @@ public static class HttpOverridesExtensions
             });
         }
 
-        var httpLoggingEnabledKey = string.IsNullOrEmpty(httpLoggingSectionName) ? Config.HttpLoggingEnabledKey : $"{httpLoggingSectionName}:Enabled";
+        var httpLoggingEnabledKey = string.IsNullOrEmpty(httpLoggingSectionName) ? DefaultConfiguration.HttpLoggingEnabledKey : $"{httpLoggingSectionName}:Enabled";
         _isHttpLoggingEnabled = configuration[httpLoggingEnabledKey].IsTrue();
 
         if (_isHttpLoggingEnabled)
@@ -66,8 +66,8 @@ public static class HttpOverridesExtensions
 
             var httpLoggingConfigurationSection = string.IsNullOrEmpty(httpLoggingSectionName) ? configuration : configuration.GetSection(httpLoggingSectionName);
             services.Configure<HttpLoggingOptions>(httpLoggingConfigurationSection);
-            var isClearRequestHeaders = httpLoggingConfigurationSection[Config.ClearRequestHeadersKey].IsTrue();
-            var isClearResponseHeaders = httpLoggingConfigurationSection[Config.ClearResponseHeadersKey].IsTrue();
+            var isClearRequestHeaders = httpLoggingConfigurationSection[DefaultConfiguration.ClearRequestHeadersKey].IsTrue();
+            var isClearResponseHeaders = httpLoggingConfigurationSection[DefaultConfiguration.ClearResponseHeadersKey].IsTrue();
             var httpLoggingConfig = httpLoggingConfigurationSection.Get<HttpLoggingConfig>();
             var requestHeaders = httpLoggingConfig?.RequestHeaders.SplitSet() ?? new HashSet<string>();
             var responseHeaders = httpLoggingConfig?.ResponseHeaders.SplitSet() ?? new HashSet<string>();
@@ -111,7 +111,7 @@ public static class HttpOverridesExtensions
 
         if (_isForwardedHeadersEnabled)
         {
-            var bypassNetLahHttpOverridesMessage = $"Bypass HttpOverrides configuration settings because {Config.AspNetCoreForwardedHeadersEnabledKey} is True";
+            var bypassNetLahHttpOverridesMessage = $"Bypass HttpOverrides configuration settings because {DefaultConfiguration.AspNetCoreForwardedHeadersEnabledKey} is True";
 #pragma warning disable CA2254 // Template should be a static expression
             logger.LogInformation(bypassNetLahHttpOverridesMessage);
 #pragma warning restore CA2254 // Template should be a static expression
@@ -167,8 +167,8 @@ public static class HttpOverridesExtensions
 
     private static void ProcessKnownNetworks(IConfiguration configuration, ForwardedHeadersOptions options)
     {
-        var knownNetworks = configuration[Config.KnownNetworksKey];
-        if (knownNetworks != null || configuration[Config.ClearKnownNetworksKey].IsTrue())
+        var knownNetworks = configuration[DefaultConfiguration.KnownNetworksKey];
+        if (knownNetworks != null || configuration[DefaultConfiguration.ClearKnownNetworksKey].IsTrue())
         {
             options.KnownNetworks.Clear();
         }
@@ -193,8 +193,8 @@ public static class HttpOverridesExtensions
 
     private static void ProcessKnownProxies(IConfiguration configuration, ForwardedHeadersOptions options)
     {
-        var knownProxies = configuration[Config.KnownProxiesKey];
-        if (knownProxies != null || configuration[Config.ClearKnownProxiesKey].IsTrue())
+        var knownProxies = configuration[DefaultConfiguration.KnownProxiesKey];
+        if (knownProxies != null || configuration[DefaultConfiguration.ClearKnownProxiesKey].IsTrue())
         {
             options.KnownProxies.Clear();
         }
