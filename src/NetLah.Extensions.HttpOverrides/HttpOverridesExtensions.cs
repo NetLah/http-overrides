@@ -35,6 +35,8 @@ public static class HttpOverridesExtensions
 
         _isForwardedHeadersEnabled = configuration[DefaultConfiguration.AspNetCoreForwardedHeadersEnabledKey].IsTrue();
 
+        services.AddHealthChecks();     // Registers health checks services
+
         if (!_isForwardedHeadersEnabled)
         {
             EnsureLogger();
@@ -102,6 +104,8 @@ public static class HttpOverridesExtensions
         var sp = app.ApplicationServices;
         var optionsForwardedHeadersOptions = sp.GetRequiredService<IOptions<ForwardedHeadersOptions>>();
         var fho = optionsForwardedHeadersOptions.Value;
+
+        app.UseHealthChecks("/healthz");
 
         var hostFilteringOptions = sp.GetRequiredService<IOptions<Microsoft.AspNetCore.HostFiltering.HostFilteringOptions>>();
         if (hostFilteringOptions?.Value is { } hostFiltering)
