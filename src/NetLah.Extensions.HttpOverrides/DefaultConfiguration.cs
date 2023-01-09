@@ -2,6 +2,10 @@
 
 public static class DefaultConfiguration
 {
+    public const string HealthChecksConst = "/_healthz";
+    public const string HealthChecksAzureContainer = "/robots933456.txt";
+
+    public const string HealthCheckKey = "HealthCheck";
     public const string HttpOverridesKey = "HttpOverrides";
     public const string HttpLoggingKey = "HttpLogging";
 
@@ -9,7 +13,7 @@ public static class DefaultConfiguration
     /// Setttings ASPNETCORE_FORWARDEDHEADERS_ENABLED
     /// </summary>
     public const string AspNetCoreForwardedHeadersEnabledKey = "ForwardedHeaders_Enabled";
-    
+
     public const string ClearForwardLimitKey = "ClearForwardLimit";
 
     public const string KnownNetworksKey = "KnownNetworks";
@@ -21,4 +25,6 @@ public static class DefaultConfiguration
     public const string HttpLoggingEnabledKey = "HttpLoggingEnabled";
     public const string ClearRequestHeadersKey = "ClearRequestHeaders";
     public const string ClearResponseHeadersKey = "ClearResponseHeaders";
+
+    public static string HealthChecksPath { get; } = HealthChecksConst;
 }

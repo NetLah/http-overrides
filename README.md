@@ -42,6 +42,13 @@ Reference [ForwardedHeadersOptionsSetup.cs](https://github.com/dotnet/aspnetcore
 
 ```json
 {
+  "HealthCheck": {
+    "IsEnabled": true,
+    "IsDefaultAzure": false,    // will include /_healthz and /robots933456.txt
+    "Path": "/_healthz",
+    "Paths": [ "/_healthz", "/robots933456.txt" ],
+    "Port": null
+  },
   "HttpOverrides": {
     "ClearForwardLimit": false,
     "ClearKnownProxies": false,
@@ -57,6 +64,6 @@ Reference [ForwardedHeadersOptionsSetup.cs](https://github.com/dotnet/aspnetcore
     "OriginalProtoHeaderName": "X-Original-Proto",
     "ForwardedHeaders": "", // XForwardedFor,XForwardedHost,XForwardedProto
     "AllowedHosts": "" // "*"
-  }
+  }  
 }
 ```

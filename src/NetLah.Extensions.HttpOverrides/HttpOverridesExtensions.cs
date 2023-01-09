@@ -1,4 +1,6 @@
 ﻿using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpLogging;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.Extensions.Configuration;
@@ -13,17 +15,23 @@ namespace NetLah.Extensions.HttpOverrides;
 public static class HttpOverridesExtensions
 {
     private static readonly Lazy<ILogger?> _loggerLazy = new(() => AppLogReference.GetAppLogLogger(typeof(HttpOverridesExtensions).Namespace));
+    private static HealthCheckAppOptions _healthCheckAppOptions = default!;
     private static bool _isForwardedHeadersEnabled;
     private static bool _isHttpLoggingEnabled;
 
-    public static WebApplicationBuilder AddHttpOverrides(this WebApplicationBuilder webApplicationBuilder, string httpOverridesSectionName = DefaultConfiguration.HttpOverridesKey, string httpLoggingSectionName = DefaultConfiguration.HttpLoggingKey)
+    public static WebApplicationBuilder AddHttpOverrides(this WebApplicationBuilder webApplicationBuilder,
+        string httpOverridesSectionName = DefaultConfiguration.HttpOverridesKey,
+        string httpLoggingSectionName = DefaultConfiguration.HttpLoggingKey,
+        string healthCheckSectionName = DefaultConfiguration.HealthCheckKey)
     {
-        webApplicationBuilder.Services.AddHttpOverrides(webApplicationBuilder.Configuration, httpOverridesSectionName, httpLoggingSectionName);
+        webApplicationBuilder.Services.AddHttpOverrides(webApplicationBuilder.Configuration, httpOverridesSectionName, httpLoggingSectionName, healthCheckSectionName);
         return webApplicationBuilder;
     }
 
     public static IServiceCollection AddHttpOverrides(this IServiceCollection services, IConfiguration configuration,
-        string httpOverridesSectionName = DefaultConfiguration.HttpOverridesKey, string httpLoggingSectionName = DefaultConfiguration.HttpLoggingKey)
+        string httpOverridesSectionName = DefaultConfiguration.HttpOverridesKey,
+        string httpLoggingSectionName = DefaultConfiguration.HttpLoggingKey,
+        string healthCheckSectionName = DefaultConfiguration.HealthCheckKey)
     {
         ILogger? logger = null;
 
@@ -33,9 +41,27 @@ public static class HttpOverridesExtensions
             logger ??= NullLogger.Instance;
         }
 
-        _isForwardedHeadersEnabled = configuration[DefaultConfiguration.AspNetCoreForwardedHeadersEnabledKey].IsTrue();
+        var healthCheckConfigurationSection = string.IsNullOrEmpty(healthCheckSectionName) ? configuration : configuration.GetSection(healthCheckSectionName);
+        var healthCheckAppOptions = _healthCheckAppOptions = healthCheckConfigurationSection.Get<HealthCheckAppOptions>() ?? new HealthCheckAppOptions();
+        if (healthCheckAppOptions.IsEnabled)
+        {
+            EnsureLogger();
+            if (healthCheckConfigurationSection.GetChildren().Any())
+            {
+                logger?.LogDebug("Attempt to load HealthCheckOptions from configuration");
+                services.Configure<HealthCheckOptions>(healthCheckConfigurationSection);
+            }
+            else
+            {
+                logger?.LogDebug("Add HealthChecks");
+            }
 
-        services.AddHealthChecks();     // Registers health checks services
+            services.Configure<HealthCheckAppOptions>(healthCheckConfigurationSection);
+
+            services.AddHealthChecks();     // Registers health checks services
+        }
+
+        _isForwardedHeadersEnabled = configuration[DefaultConfiguration.AspNetCoreForwardedHeadersEnabledKey].IsTrue();
 
         if (!_isForwardedHeadersEnabled)
         {
@@ -97,15 +123,60 @@ public static class HttpOverridesExtensions
         return services;
     }
 
-    public static IApplicationBuilder UseHttpOverrides(this IApplicationBuilder app, ILogger? logger = null)
+    public static WebApplication UseHttpOverrides(this WebApplication app, ILogger? logger = null)
     {
         logger ??= _loggerLazy.Value;
         logger ??= NullLogger.Instance;
-        var sp = app.ApplicationServices;
+        var sp = app.Services;
         var optionsForwardedHeadersOptions = sp.GetRequiredService<IOptions<ForwardedHeadersOptions>>();
         var fho = optionsForwardedHeadersOptions.Value;
 
-        app.UseHealthChecks("/healthz");
+        if (_healthCheckAppOptions.IsEnabled)
+        {
+            if (_healthCheckAppOptions.IsDefaultAzure)
+            {
+                _healthCheckAppOptions.Paths = new[] { DefaultConfiguration.HealthChecksPath, DefaultConfiguration.HealthChecksAzureContainer };
+            }
+
+            var port = _healthCheckAppOptions.Port;
+            if (_healthCheckAppOptions.Paths is { } pathArrays && pathArrays.Length > 0)
+            {
+                var paths = pathArrays.Select(p => (PathString)p).ToArray();
+                logger.LogDebug("Use HealthChecks Port:{port} {paths}", port, paths);
+
+                bool predicate(HttpContext c)
+                {
+                    if (port == null || c.Connection.LocalPort == port)
+                    {
+                        foreach (var path in paths)
+                        {
+                            if (c.Request.Path.StartsWithSegments(path, out var remaining) &&
+                                string.IsNullOrEmpty(remaining))
+                            {
+                                return true;
+                            }
+                        }
+                    }
+
+                    return false;
+                }
+
+                app.MapWhen(predicate, b => b.UseMiddleware<HealthCheckMiddleware>(Array.Empty<object>()));
+            }
+            else
+            {
+                var healthChecksPath = StringHelper.NormalizeNull(_healthCheckAppOptions.Path);
+                logger.LogDebug("Use HealthChecks Port:{port} {path}", port, healthChecksPath);
+                if (port.HasValue)
+                {
+                    app.UseHealthChecks(healthChecksPath, port.Value);
+                }
+                else
+                {
+                    app.UseHealthChecks(healthChecksPath);
+                }
+            }
+        }
 
         var hostFilteringOptions = sp.GetRequiredService<IOptions<Microsoft.AspNetCore.HostFiltering.HostFilteringOptions>>();
         if (hostFilteringOptions?.Value is { } hostFiltering)
