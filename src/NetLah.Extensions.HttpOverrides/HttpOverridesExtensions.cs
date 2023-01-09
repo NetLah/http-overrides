@@ -1,4 +1,6 @@
 ﻿using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpLogging;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.Extensions.Configuration;
@@ -13,19 +15,25 @@ namespace NetLah.Extensions.HttpOverrides;
 public static class HttpOverridesExtensions
 {
     private static readonly Lazy<ILogger?> _loggerLazy = new(() => AppLogReference.GetAppLogLogger(typeof(HttpOverridesExtensions).Namespace));
+    private static HealthCheckAppOptions _healthCheckAppOptions = default!;
     private static bool _isForwardedHeadersEnabled;
     private static bool _isHttpLoggingEnabled;
 
-    public static WebApplicationBuilder AddHttpOverrides(this WebApplicationBuilder webApplicationBuilder, string httpOverridesSectionName = Config.HttpOverridesKey, string httpLoggingSectionName = Config.HttpLoggingKey)
+    public static WebApplicationBuilder AddHttpOverrides(this WebApplicationBuilder webApplicationBuilder,
+        string httpOverridesSectionName = DefaultConfiguration.HttpOverridesKey,
+        string httpLoggingSectionName = DefaultConfiguration.HttpLoggingKey,
+        string healthCheckSectionName = DefaultConfiguration.HealthCheckKey)
     {
-        webApplicationBuilder.Services.AddHttpOverrides(webApplicationBuilder.Configuration, httpOverridesSectionName, httpLoggingSectionName);
+        webApplicationBuilder.Services.AddHttpOverrides(webApplicationBuilder.Configuration, httpOverridesSectionName, httpLoggingSectionName, healthCheckSectionName);
         return webApplicationBuilder;
     }
 
     public static IServiceCollection AddHttpOverrides(this IServiceCollection services, IConfiguration configuration,
-        string httpOverridesSectionName = Config.HttpOverridesKey, string httpLoggingSectionName = Config.HttpLoggingKey)
+        string httpOverridesSectionName = DefaultConfiguration.HttpOverridesKey,
+        string httpLoggingSectionName = DefaultConfiguration.HttpLoggingKey,
+        string healthCheckSectionName = DefaultConfiguration.HealthCheckKey)
     {
-        ILogger? logger =null;
+        ILogger? logger = null;
 
         void EnsureLogger()
         {
@@ -33,7 +41,27 @@ public static class HttpOverridesExtensions
             logger ??= NullLogger.Instance;
         }
 
-        _isForwardedHeadersEnabled = configuration[Config.AspNetCoreForwardedHeadersEnabledKey].IsTrue();
+        var healthCheckConfigurationSection = string.IsNullOrEmpty(healthCheckSectionName) ? configuration : configuration.GetSection(healthCheckSectionName);
+        var healthCheckAppOptions = _healthCheckAppOptions = healthCheckConfigurationSection.Get<HealthCheckAppOptions>() ?? new HealthCheckAppOptions();
+        if (healthCheckAppOptions.IsEnabled)
+        {
+            EnsureLogger();
+            if (healthCheckConfigurationSection.GetChildren().Any())
+            {
+                logger?.LogDebug("Attempt to load HealthCheckOptions from configuration");
+                services.Configure<HealthCheckOptions>(healthCheckConfigurationSection);
+            }
+            else
+            {
+                logger?.LogDebug("Add HealthChecks");
+            }
+
+            services.Configure<HealthCheckAppOptions>(healthCheckConfigurationSection);
+
+            services.AddHealthChecks();     // Registers health checks services
+        }
+
+        _isForwardedHeadersEnabled = configuration[DefaultConfiguration.AspNetCoreForwardedHeadersEnabledKey].IsTrue();
 
         if (!_isForwardedHeadersEnabled)
         {
@@ -45,7 +73,7 @@ public static class HttpOverridesExtensions
 
             services.Configure<ForwardedHeadersOptions>(options =>
             {
-                if (httpOverridesConfigurationSection[Config.ClearForwardLimitKey].IsTrue())
+                if (httpOverridesConfigurationSection[DefaultConfiguration.ClearForwardLimitKey].IsTrue())
                 {
                     options.ForwardLimit = null;
                 }
@@ -56,7 +84,7 @@ public static class HttpOverridesExtensions
             });
         }
 
-        var httpLoggingEnabledKey = string.IsNullOrEmpty(httpLoggingSectionName) ? Config.HttpLoggingEnabledKey : $"{httpLoggingSectionName}:Enabled";
+        var httpLoggingEnabledKey = string.IsNullOrEmpty(httpLoggingSectionName) ? DefaultConfiguration.HttpLoggingEnabledKey : $"{httpLoggingSectionName}:Enabled";
         _isHttpLoggingEnabled = configuration[httpLoggingEnabledKey].IsTrue();
 
         if (_isHttpLoggingEnabled)
@@ -66,8 +94,8 @@ public static class HttpOverridesExtensions
 
             var httpLoggingConfigurationSection = string.IsNullOrEmpty(httpLoggingSectionName) ? configuration : configuration.GetSection(httpLoggingSectionName);
             services.Configure<HttpLoggingOptions>(httpLoggingConfigurationSection);
-            var isClearRequestHeaders = httpLoggingConfigurationSection[Config.ClearRequestHeadersKey].IsTrue();
-            var isClearResponseHeaders = httpLoggingConfigurationSection[Config.ClearResponseHeadersKey].IsTrue();
+            var isClearRequestHeaders = httpLoggingConfigurationSection[DefaultConfiguration.ClearRequestHeadersKey].IsTrue();
+            var isClearResponseHeaders = httpLoggingConfigurationSection[DefaultConfiguration.ClearResponseHeadersKey].IsTrue();
             var httpLoggingConfig = httpLoggingConfigurationSection.Get<HttpLoggingConfig>();
             var requestHeaders = httpLoggingConfig?.RequestHeaders.SplitSet() ?? new HashSet<string>();
             var responseHeaders = httpLoggingConfig?.ResponseHeaders.SplitSet() ?? new HashSet<string>();
@@ -95,13 +123,61 @@ public static class HttpOverridesExtensions
         return services;
     }
 
-    public static IApplicationBuilder UseHttpOverrides(this IApplicationBuilder app, ILogger? logger = null)
+    public static WebApplication UseHttpOverrides(this WebApplication app, ILogger? logger = null)
     {
         logger ??= _loggerLazy.Value;
         logger ??= NullLogger.Instance;
-        var sp = app.ApplicationServices;
+        var sp = app.Services;
         var optionsForwardedHeadersOptions = sp.GetRequiredService<IOptions<ForwardedHeadersOptions>>();
         var fho = optionsForwardedHeadersOptions.Value;
+
+        if (_healthCheckAppOptions.IsEnabled)
+        {
+            if (_healthCheckAppOptions.IsAzureAppServiceContainer)
+            {
+                var mainHealthChecksPath = string.IsNullOrEmpty(_healthCheckAppOptions.Path) ? DefaultConfiguration.HealthChecksPath : _healthCheckAppOptions.Path;
+                _healthCheckAppOptions.Paths = new[] { mainHealthChecksPath, DefaultConfiguration.HealthChecksAzureAppServiceContainer };
+            }
+
+            var port = _healthCheckAppOptions.Port;
+            if (_healthCheckAppOptions.Paths is { } pathArrays && pathArrays.Length > 0)
+            {
+                var paths = pathArrays.Select(p => (PathString)p).ToArray();
+                logger.LogDebug("Use HealthChecks Port:{port} {paths}", port, paths);
+
+                bool predicate(HttpContext c)
+                {
+                    if (port == null || c.Connection.LocalPort == port)
+                    {
+                        foreach (var path in paths)
+                        {
+                            if (c.Request.Path.StartsWithSegments(path, out var remaining) &&
+                                string.IsNullOrEmpty(remaining))
+                            {
+                                return true;
+                            }
+                        }
+                    }
+
+                    return false;
+                }
+
+                app.MapWhen(predicate, b => b.UseMiddleware<HealthCheckMiddleware>(Array.Empty<object>()));
+            }
+            else
+            {
+                var healthChecksPath = StringHelper.NormalizeNull(_healthCheckAppOptions.Path);
+                logger.LogDebug("Use HealthChecks Port:{port} {path}", port, healthChecksPath);
+                if (port.HasValue)
+                {
+                    app.UseHealthChecks(healthChecksPath, port.Value);
+                }
+                else
+                {
+                    app.UseHealthChecks(healthChecksPath);
+                }
+            }
+        }
 
         var hostFilteringOptions = sp.GetRequiredService<IOptions<Microsoft.AspNetCore.HostFiltering.HostFilteringOptions>>();
         if (hostFilteringOptions?.Value is { } hostFiltering)
@@ -111,7 +187,7 @@ public static class HttpOverridesExtensions
 
         if (_isForwardedHeadersEnabled)
         {
-            var bypassNetLahHttpOverridesMessage = $"Bypass HttpOverrides configuration settings because {Config.AspNetCoreForwardedHeadersEnabledKey} is True";
+            var bypassNetLahHttpOverridesMessage = $"Bypass HttpOverrides configuration settings because {DefaultConfiguration.AspNetCoreForwardedHeadersEnabledKey} is True";
 #pragma warning disable CA2254 // Template should be a static expression
             logger.LogInformation(bypassNetLahHttpOverridesMessage);
 #pragma warning restore CA2254 // Template should be a static expression
@@ -167,8 +243,8 @@ public static class HttpOverridesExtensions
 
     private static void ProcessKnownNetworks(IConfiguration configuration, ForwardedHeadersOptions options)
     {
-        var knownNetworks = configuration[Config.KnownNetworksKey];
-        if (knownNetworks != null || configuration[Config.ClearKnownNetworksKey].IsTrue())
+        var knownNetworks = configuration[DefaultConfiguration.KnownNetworksKey];
+        if (knownNetworks != null || configuration[DefaultConfiguration.ClearKnownNetworksKey].IsTrue())
         {
             options.KnownNetworks.Clear();
         }
@@ -193,8 +269,8 @@ public static class HttpOverridesExtensions
 
     private static void ProcessKnownProxies(IConfiguration configuration, ForwardedHeadersOptions options)
     {
-        var knownProxies = configuration[Config.KnownProxiesKey];
-        if (knownProxies != null || configuration[Config.ClearKnownProxiesKey].IsTrue())
+        var knownProxies = configuration[DefaultConfiguration.KnownProxiesKey];
+        if (knownProxies != null || configuration[DefaultConfiguration.ClearKnownProxiesKey].IsTrue())
         {
             options.KnownProxies.Clear();
         }

@@ -24,8 +24,6 @@ try
     builder.Services.AddEndpointsApiExplorer();
     builder.Services.AddSwaggerGen();
 
-    builder.Services.AddHealthChecks();     // Registers health checks services
-
     builder.AddHttpOverrides();
 
     builder.Services.AddHttpContextAccessor();
@@ -47,8 +45,6 @@ try
     {
         // todo1
     }
-
-    app.UseHealthChecks("/healthz");
 
     // app.UseHttpsRedirection()
 
