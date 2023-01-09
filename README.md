@@ -44,9 +44,9 @@ Reference [ForwardedHeadersOptionsSetup.cs](https://github.com/dotnet/aspnetcore
 {
   "HealthCheck": {
     "IsEnabled": true,
-    "IsDefaultAzure": false,    // will include /_healthz and /robots933456.txt
-    "Path": "/_healthz",
-    "Paths": [ "/_healthz", "/robots933456.txt" ],
+    "IsAzureAppServiceContainer": false,    // will include /healthz and /robots933456.txt
+    "Path": "/healthz",
+    "Paths": [ "/healthz", "/robots933456.txt" ],
     "Port": null
   },
   "HttpOverrides": {

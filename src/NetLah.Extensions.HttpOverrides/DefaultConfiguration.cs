@@ -2,8 +2,8 @@
 
 public static class DefaultConfiguration
 {
-    public const string HealthChecksConst = "/_healthz";
-    public const string HealthChecksAzureContainer = "/robots933456.txt";
+    public const string HealthChecksConst = "/healthz";
+    public const string HealthChecksAzureAppServiceContainer = "/robots933456.txt";
 
     public const string HealthCheckKey = "HealthCheck";
     public const string HttpOverridesKey = "HttpOverrides";

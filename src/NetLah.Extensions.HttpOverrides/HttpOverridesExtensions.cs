@@ -133,9 +133,10 @@ public static class HttpOverridesExtensions
 
         if (_healthCheckAppOptions.IsEnabled)
         {
-            if (_healthCheckAppOptions.IsDefaultAzure)
+            if (_healthCheckAppOptions.IsAzureAppServiceContainer)
             {
-                _healthCheckAppOptions.Paths = new[] { DefaultConfiguration.HealthChecksPath, DefaultConfiguration.HealthChecksAzureContainer };
+                var mainHealthChecksPath = string.IsNullOrEmpty(_healthCheckAppOptions.Path) ? DefaultConfiguration.HealthChecksPath : _healthCheckAppOptions.Path;
+                _healthCheckAppOptions.Paths = new[] { mainHealthChecksPath, DefaultConfiguration.HealthChecksAzureAppServiceContainer };
             }
 
             var port = _healthCheckAppOptions.Port;
