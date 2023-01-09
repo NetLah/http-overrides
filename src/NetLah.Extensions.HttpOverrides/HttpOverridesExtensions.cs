@@ -139,6 +139,7 @@ public static class HttpOverridesExtensions
                 _healthCheckAppOptions.Paths = new[] { mainHealthChecksPath, DefaultConfiguration.HealthChecksAzureAppServiceContainer };
             }
 
+            // Cannot use app.MapHealthChecks because of HttpsRedirection
             var port = _healthCheckAppOptions.Port;
             if (_healthCheckAppOptions.Paths is { } pathArrays && pathArrays.Length > 0)
             {
