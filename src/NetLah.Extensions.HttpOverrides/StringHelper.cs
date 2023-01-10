@@ -1,4 +1,5 @@
-﻿namespace NetLah.Extensions.HttpOverrides;
+﻿#if false
+namespace NetLah.Extensions.HttpOverrides;
 
 internal static class StringHelper
 {
@@ -16,3 +17,4 @@ internal static class StringHelper
     public static string? NormalizeNull(string? value)
         => string.IsNullOrWhiteSpace(value) ? default : value.Trim();
 }
+#endif

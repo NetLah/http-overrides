@@ -33,30 +33,50 @@ public static class HttpOverridesExtensions
         string httpLoggingSectionName = DefaultConfiguration.HttpLoggingKey,
         string healthCheckSectionName = DefaultConfiguration.HealthCheckKey)
     {
-        ILogger? logger = null;
+        ILogger? logger1 = null;
 
-        void EnsureLogger()
+        ILogger EnsureLogger()
         {
-            logger ??= _loggerLazy.Value;
-            logger ??= NullLogger.Instance;
+            logger1 ??= _loggerLazy.Value!;
+            return logger1 ??= NullLogger.Instance;
         }
 
         var healthCheckConfigurationSection = string.IsNullOrEmpty(healthCheckSectionName) ? configuration : configuration.GetSection(healthCheckSectionName);
         var healthCheckAppOptions = _healthCheckAppOptions = healthCheckConfigurationSection.Get<HealthCheckAppOptions>() ?? new HealthCheckAppOptions();
         if (healthCheckAppOptions.IsEnabled)
         {
-            EnsureLogger();
+            var logger = EnsureLogger();
+            var logLevel = healthCheckAppOptions.LogLevel;
+
             if (healthCheckConfigurationSection.GetChildren().Any())
             {
-                logger?.LogDebug("Attempt to load HealthCheckOptions from configuration");
+                logger.Log(logLevel, "Attempt to load HealthCheckOptions from configuration");
                 services.Configure<HealthCheckOptions>(healthCheckConfigurationSection);
             }
             else
             {
-                logger?.LogDebug("Add HealthChecks");
+                logger.Log(logLevel, "Add HealthChecks");
             }
 
-            services.Configure<HealthCheckAppOptions>(healthCheckConfigurationSection);
+            if (healthCheckAppOptions.RemoveResponseWriter)
+            {
+                logger.Log(logLevel, "HealthCheckOptions remove ResponseWriter");
+
+                services.Configure<HealthCheckOptions>(string.Empty, (HealthCheckOptions opt) =>
+                {
+                    opt.ResponseWriter = null!;
+                });
+            }
+            else if (!string.IsNullOrEmpty(healthCheckAppOptions.Prefix) || !string.IsNullOrEmpty(healthCheckAppOptions.Suffix))
+            {
+                logger.Log(logLevel, "HealthCheckOptions customize Prefix:{prefix} and Suffix:{suffix}", healthCheckAppOptions.Prefix, healthCheckAppOptions.Suffix);
+
+                var writer = HealthCheckResponseWriters.Instance = new HealthCheckResponseWriters(healthCheckAppOptions.Prefix, healthCheckAppOptions.Suffix);
+                services.Configure<HealthCheckOptions>(string.Empty, (HealthCheckOptions opt) =>
+                {
+                    opt.ResponseWriter = writer.WriteMinimalPlaintext;
+                });
+            }
 
             services.AddHealthChecks();     // Registers health checks services
         }
@@ -65,8 +85,8 @@ public static class HttpOverridesExtensions
 
         if (!_isForwardedHeadersEnabled)
         {
-            EnsureLogger();
-            logger?.LogDebug("Attempt to load ForwardedHeadersOptions from configuration");
+            var logger = EnsureLogger();
+            logger.LogDebug("Attempt to load ForwardedHeadersOptions from configuration");
 
             var httpOverridesConfigurationSection = string.IsNullOrEmpty(httpOverridesSectionName) ? configuration : configuration.GetSection(httpOverridesSectionName);
             services.Configure<ForwardedHeadersOptions>(httpOverridesConfigurationSection);
@@ -89,8 +109,8 @@ public static class HttpOverridesExtensions
 
         if (_isHttpLoggingEnabled)
         {
-            EnsureLogger();
-            logger?.LogDebug("Attempt to load HttpLoggingOptions from configuration");
+            var logger = EnsureLogger();
+            logger.LogDebug("Attempt to load HttpLoggingOptions from configuration");
 
             var httpLoggingConfigurationSection = string.IsNullOrEmpty(httpLoggingSectionName) ? configuration : configuration.GetSection(httpLoggingSectionName);
             services.Configure<HttpLoggingOptions>(httpLoggingConfigurationSection);
@@ -133,6 +153,7 @@ public static class HttpOverridesExtensions
 
         if (_healthCheckAppOptions.IsEnabled)
         {
+            var logLevel = _healthCheckAppOptions.LogLevel;
             if (_healthCheckAppOptions.IsAzureAppServiceContainer)
             {
                 var mainHealthChecksPath = string.IsNullOrEmpty(_healthCheckAppOptions.Path) ? DefaultConfiguration.HealthChecksPath : _healthCheckAppOptions.Path;
@@ -144,7 +165,7 @@ public static class HttpOverridesExtensions
             if (_healthCheckAppOptions.Paths is { } pathArrays && pathArrays.Length > 0)
             {
                 var paths = pathArrays.Select(p => (PathString)p).ToArray();
-                logger.LogDebug("Use HealthChecks Port:{port} {paths}", port, paths);
+                logger.Log(logLevel, "Use HealthChecks Port:{port} Paths:{paths}", port, paths);
 
                 bool predicate(HttpContext c)
                 {
@@ -167,8 +188,8 @@ public static class HttpOverridesExtensions
             }
             else
             {
-                var healthChecksPath = StringHelper.NormalizeNull(_healthCheckAppOptions.Path);
-                logger.LogDebug("Use HealthChecks Port:{port} {path}", port, healthChecksPath);
+                var healthChecksPath = _healthCheckAppOptions.Path;
+                logger.LogDebug("Use HealthChecks Port:{port} Path:{path}", port, healthChecksPath);
                 if (port.HasValue)
                 {
                     app.UseHealthChecks(healthChecksPath, port.Value);
