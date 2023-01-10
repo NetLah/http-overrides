@@ -14,6 +14,8 @@ public static class DefaultConfiguration
     /// </summary>
     public const string AspNetCoreForwardedHeadersEnabledKey = "ForwardedHeaders_Enabled";
 
+    public const string HttpOverridesLogLevelKey = "LogLevel";
+
     public const string ClearForwardLimitKey = "ClearForwardLimit";
 
     public const string KnownNetworksKey = "KnownNetworks";
@@ -23,6 +25,7 @@ public static class DefaultConfiguration
     public const string ClearKnownProxiesKey = "ClearKnownProxies";
 
     public const string HttpLoggingEnabledKey = "HttpLoggingEnabled";
+    public const string HttpLoggingLogLevelKey = "LogLevel";
     public const string ClearRequestHeadersKey = "ClearRequestHeaders";
     public const string ClearResponseHeadersKey = "ClearResponseHeaders";
 

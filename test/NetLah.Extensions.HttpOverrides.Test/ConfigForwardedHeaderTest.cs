@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace NetLah.Extensions.HttpOverrides.Test;
@@ -33,6 +34,12 @@ public class ConfigForwardedHeaderTest
         Assert.Equal("127.0.0.1/8", string.Join(",", options.KnownNetworks.Select(ipn => $"{ipn.Prefix}/{ipn.PrefixLength}")));
         Assert.Equal("", string.Join(",", options.AllowedHosts));
         Assert.False(options.RequireHeaderSymmetry);
+
+        Assert.Equal(LogLevel.Debug, HttpOverridesExtensions.GetLogLevel(configuration, $"{DefaultConfiguration.HttpOverridesKey}:{DefaultConfiguration.HttpOverridesLogLevelKey}"));
+        Assert.Equal(LogLevel.Debug, HttpOverridesExtensions.GetLogLevel(configuration, $"{DefaultConfiguration.HttpLoggingKey}:{DefaultConfiguration.HttpLoggingLogLevelKey}"));
+
+        Assert.Equal(LogLevel.Critical, HttpOverridesExtensions.GetLogLevel(configuration, $"{DefaultConfiguration.HttpOverridesKey}:{DefaultConfiguration.HttpOverridesLogLevelKey}", LogLevel.Critical));
+        Assert.Equal(LogLevel.Trace, HttpOverridesExtensions.GetLogLevel(configuration, $"{DefaultConfiguration.HttpLoggingKey}:{DefaultConfiguration.HttpLoggingLogLevelKey}", LogLevel.Trace));
     }
 
     [Fact]
@@ -54,6 +61,8 @@ public class ConfigForwardedHeaderTest
             ["HttpOverrides:AllowedHosts:1"] = "host2.example.com",
             ["HttpOverrides:AllowedHosts:2"] = "demo.example.com",
             ["HttpOverrides:RequireHeaderSymmetry"] = "true",
+            ["HttpOverrides:LogLevel"] = "Warning",
+            ["HttpLogging:LogLevel"] = "Error",
         });
         var services = new ServiceCollection();
         HttpOverridesExtensions.AddHttpOverrides(services, configuration);
@@ -71,6 +80,9 @@ public class ConfigForwardedHeaderTest
         Assert.Equal("172.16.0.0/12,100.64.0.0/10", string.Join(",", options.KnownNetworks.Select(ipn => $"{ipn.Prefix}/{ipn.PrefixLength}")));
         Assert.Equal("host1,host2.example.com,demo.example.com", string.Join(",", options.AllowedHosts));
         Assert.True(options.RequireHeaderSymmetry);
+
+        Assert.Equal(LogLevel.Warning, HttpOverridesExtensions.GetLogLevel(configuration, $"{DefaultConfiguration.HttpOverridesKey}:{DefaultConfiguration.HttpOverridesLogLevelKey}"));
+        Assert.Equal(LogLevel.Error, HttpOverridesExtensions.GetLogLevel(configuration, $"{DefaultConfiguration.HttpLoggingKey}:{DefaultConfiguration.HttpLoggingLogLevelKey}"));
     }
 
 }

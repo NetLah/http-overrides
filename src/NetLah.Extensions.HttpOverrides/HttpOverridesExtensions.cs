@@ -18,6 +18,8 @@ public static class HttpOverridesExtensions
     private static HealthCheckAppOptions _healthCheckAppOptions = default!;
     private static bool _isForwardedHeadersEnabled;
     private static bool _isHttpLoggingEnabled;
+    private static LogLevel _httpOverridesLogLevel = LogLevel.Information;
+    private static LogLevel _httpLoggingLogLevel = LogLevel.Information;
 
     public static WebApplicationBuilder AddHttpOverrides(this WebApplicationBuilder webApplicationBuilder,
         string httpOverridesSectionName = DefaultConfiguration.HttpOverridesKey,
@@ -43,10 +45,12 @@ public static class HttpOverridesExtensions
 
         var healthCheckConfigurationSection = string.IsNullOrEmpty(healthCheckSectionName) ? configuration : configuration.GetSection(healthCheckSectionName);
         var healthCheckAppOptions = _healthCheckAppOptions = healthCheckConfigurationSection.Get<HealthCheckAppOptions>() ?? new HealthCheckAppOptions();
+
         if (healthCheckAppOptions.IsEnabled)
         {
             var logger = EnsureLogger();
             var logLevel = healthCheckAppOptions.LogLevel;
+            logger.LogTrace("HealthCheck LogLevel={logLevel}", logLevel);
 
             if (healthCheckConfigurationSection.GetChildren().Any())
             {
@@ -62,9 +66,9 @@ public static class HttpOverridesExtensions
             {
                 logger.Log(logLevel, "HealthCheckOptions remove ResponseWriter");
 
-                services.Configure<HealthCheckOptions>(string.Empty, (HealthCheckOptions opt) =>
+                services.Configure<HealthCheckOptions>(options =>
                 {
-                    opt.ResponseWriter = null!;
+                    options.ResponseWriter = null!;
                 });
             }
             else if (!string.IsNullOrEmpty(healthCheckAppOptions.Prefix) || !string.IsNullOrEmpty(healthCheckAppOptions.Suffix))
@@ -72,9 +76,9 @@ public static class HttpOverridesExtensions
                 logger.Log(logLevel, "HealthCheckOptions customize Prefix:{prefix} and Suffix:{suffix}", healthCheckAppOptions.Prefix, healthCheckAppOptions.Suffix);
 
                 var writer = HealthCheckResponseWriters.Instance = new HealthCheckResponseWriters(healthCheckAppOptions.Prefix, healthCheckAppOptions.Suffix);
-                services.Configure<HealthCheckOptions>(string.Empty, (HealthCheckOptions opt) =>
+                services.Configure<HealthCheckOptions>(options =>
                 {
-                    opt.ResponseWriter = writer.WriteMinimalPlaintext;
+                    options.ResponseWriter = writer.WriteMinimalPlaintext;
                 });
             }
 
@@ -82,15 +86,18 @@ public static class HttpOverridesExtensions
         }
 
         _isForwardedHeadersEnabled = configuration[DefaultConfiguration.AspNetCoreForwardedHeadersEnabledKey].IsTrue();
+        var httpOverridesConfigurationSection = string.IsNullOrEmpty(httpOverridesSectionName) ? configuration : configuration.GetSection(httpOverridesSectionName);
+        _httpOverridesLogLevel = GetLogLevel(httpOverridesConfigurationSection, DefaultConfiguration.HttpOverridesLogLevelKey, LogLevel.Information);
 
         if (!_isForwardedHeadersEnabled)
         {
             var logger = EnsureLogger();
-            logger.LogDebug("Attempt to load ForwardedHeadersOptions from configuration");
 
-            var httpOverridesConfigurationSection = string.IsNullOrEmpty(httpOverridesSectionName) ? configuration : configuration.GetSection(httpOverridesSectionName);
+            logger.LogTrace("HttpOverrides LogLevel={logLevel}", _httpOverridesLogLevel);
+
+            logger.Log(_httpOverridesLogLevel, "Attempt to load ForwardedHeadersOptions from configuration");
+
             services.Configure<ForwardedHeadersOptions>(httpOverridesConfigurationSection);
-
             services.Configure<ForwardedHeadersOptions>(options =>
             {
                 if (httpOverridesConfigurationSection[DefaultConfiguration.ClearForwardLimitKey].IsTrue())
@@ -106,13 +113,17 @@ public static class HttpOverridesExtensions
 
         var httpLoggingEnabledKey = string.IsNullOrEmpty(httpLoggingSectionName) ? DefaultConfiguration.HttpLoggingEnabledKey : $"{httpLoggingSectionName}:Enabled";
         _isHttpLoggingEnabled = configuration[httpLoggingEnabledKey].IsTrue();
+        var httpLoggingConfigurationSection = string.IsNullOrEmpty(httpLoggingSectionName) ? configuration : configuration.GetSection(httpLoggingSectionName);
+        _httpLoggingLogLevel = GetLogLevel(httpLoggingConfigurationSection, DefaultConfiguration.HttpLoggingLogLevelKey);
 
         if (_isHttpLoggingEnabled)
         {
             var logger = EnsureLogger();
-            logger.LogDebug("Attempt to load HttpLoggingOptions from configuration");
 
-            var httpLoggingConfigurationSection = string.IsNullOrEmpty(httpLoggingSectionName) ? configuration : configuration.GetSection(httpLoggingSectionName);
+            logger.LogTrace("HttpLogging LogLevel={logLevel}", _httpLoggingLogLevel);
+
+            logger.Log(_httpLoggingLogLevel, "Attempt to load HttpLoggingOptions from configuration");
+
             services.Configure<HttpLoggingOptions>(httpLoggingConfigurationSection);
             var isClearRequestHeaders = httpLoggingConfigurationSection[DefaultConfiguration.ClearRequestHeadersKey].IsTrue();
             var isClearResponseHeaders = httpLoggingConfigurationSection[DefaultConfiguration.ClearResponseHeadersKey].IsTrue();
@@ -189,7 +200,7 @@ public static class HttpOverridesExtensions
             else
             {
                 var healthChecksPath = _healthCheckAppOptions.Path;
-                logger.LogDebug("Use HealthChecks Port:{port} Path:{path}", port, healthChecksPath);
+                logger.Log(logLevel, "Use HealthChecks Port:{port} Path:{path}", port, healthChecksPath);
                 if (port.HasValue)
                 {
                     app.UseHealthChecks(healthChecksPath, port.Value);
@@ -204,30 +215,30 @@ public static class HttpOverridesExtensions
         var hostFilteringOptions = sp.GetRequiredService<IOptions<Microsoft.AspNetCore.HostFiltering.HostFilteringOptions>>();
         if (hostFilteringOptions?.Value is { } hostFiltering)
         {
-            logger.LogInformation("HostFiltering: {@hostFiltering}", hostFiltering);
+            logger.Log(_httpOverridesLogLevel, "HostFiltering: {@hostFiltering}", hostFiltering);
         }
 
         if (_isForwardedHeadersEnabled)
         {
             var bypassNetLahHttpOverridesMessage = $"Bypass HttpOverrides configuration settings because {DefaultConfiguration.AspNetCoreForwardedHeadersEnabledKey} is True";
 #pragma warning disable CA2254 // Template should be a static expression
-            logger.LogInformation(bypassNetLahHttpOverridesMessage);
+            logger.Log(_httpOverridesLogLevel, bypassNetLahHttpOverridesMessage);
 #pragma warning restore CA2254 // Template should be a static expression
         }
 
         if (fho.KnownProxies.Count > 0 || fho.KnownNetworks.Count > 0 || fho.ForwardedHeaders != ForwardedHeaders.None)
         {
-            logger.LogInformation("ForwardLimit: {forwardLimit}", fho.ForwardLimit);
+            logger.Log(_httpOverridesLogLevel, "ForwardLimit: {forwardLimit}", fho.ForwardLimit);
         }
 
         if (fho.KnownProxies.Count > 0)
         {
-            logger.LogInformation("KnownProxies: {knownProxies}", fho.KnownProxies.ToStringComma());
+            logger.Log(_httpOverridesLogLevel, "KnownProxies: {knownProxies}", fho.KnownProxies.ToStringComma());
         }
 
         if (fho.KnownNetworks.Count > 0)
         {
-            logger.LogInformation("KnownNetworks: {knownNetworks}", fho.KnownNetworks.ToStringComma());
+            logger.Log(_httpOverridesLogLevel, "KnownNetworks: {knownNetworks}", fho.KnownNetworks.ToStringComma());
         }
 
         if (fho.ForwardedHeaders != ForwardedHeaders.None)
@@ -235,25 +246,25 @@ public static class HttpOverridesExtensions
             var forwardedHeaders = string.Join(",", fho.ForwardedHeaders);
             if (_isForwardedHeadersEnabled)
             {
-                logger.LogInformation("ForwardedHeaders: {forwardedHeaders}", forwardedHeaders);
+                logger.Log(_httpOverridesLogLevel, "ForwardedHeaders: {forwardedHeaders}", forwardedHeaders);
             }
             else
             {
                 app.UseForwardedHeaders();
-                logger.LogInformation("Use ForwardedHeaders: {forwardedHeaders}", forwardedHeaders);
+                logger.Log(_httpOverridesLogLevel, "Use ForwardedHeaders: {forwardedHeaders}", forwardedHeaders);
             }
         }
 
         if (fho.AllowedHosts.Count > 0)
         {
             var allowedHosts = string.Join(",", fho.AllowedHosts);
-            logger.LogInformation("AllowedHosts: {allowedHosts}", allowedHosts);
+            logger.Log(_httpOverridesLogLevel, "AllowedHosts: {allowedHosts}", allowedHosts);
         }
 
         if (_isHttpLoggingEnabled)
         {
             var httpLogging = sp.GetRequiredService<IOptions<HttpLoggingOptions>>()?.Value;
-            logger.LogInformation("Use HttpLogging LoggingFields:{loggingFields} MediaTypeOptions:{mediaTypeOptions} RequestBodyLogLimit:{requestBodyLogLimit} ResponseBodyLogLimit:{responseBodyLogLimit} RequestHeaders:{requestHeaders} ResponseHeaders:{responseHeaders}",
+            logger.Log(_httpLoggingLogLevel, "Use HttpLogging LoggingFields:{loggingFields} MediaTypeOptions:{mediaTypeOptions} RequestBodyLogLimit:{requestBodyLogLimit} ResponseBodyLogLimit:{responseBodyLogLimit} RequestHeaders:{requestHeaders} ResponseHeaders:{responseHeaders}",
                 httpLogging?.LoggingFields, httpLogging?.MediaTypeOptions, httpLogging?.RequestBodyLogLimit, httpLogging?.ResponseBodyLogLimit,
                 string.Join(',', httpLogging?.RequestHeaders ?? Enumerable.Empty<string>()),
                 string.Join(',', httpLogging?.ResponseHeaders ?? Enumerable.Empty<string>()));
@@ -315,4 +326,9 @@ public static class HttpOverridesExtensions
     }
 #pragma warning restore S1144 // Unused private types or members should be removed
 #pragma warning restore S3459 // Unassigned members should be removed
+
+    internal static LogLevel GetLogLevel(IConfiguration configuration, string key, LogLevel defaultLogLevel = LogLevel.Debug)
+    {
+        return configuration.GetValue<LogLevel?>(key) ?? defaultLogLevel;
+    }
 }
