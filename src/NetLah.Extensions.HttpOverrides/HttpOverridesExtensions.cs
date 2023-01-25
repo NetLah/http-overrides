@@ -15,7 +15,7 @@ namespace NetLah.Extensions.HttpOverrides;
 public static class HttpOverridesExtensions
 {
     private static readonly Lazy<ILogger?> _loggerLazy = new(() => AppLogReference.GetAppLogLogger(typeof(HttpOverridesExtensions).Namespace));
-    private static HealthCheckAppOptions _healthCheckAppOptions = default!;
+    private static HealthCheckAppOptions? _healthCheckAppOptions;
     private static bool _isForwardedHeadersEnabled;
     private static bool _isHttpLoggingEnabled;
     private static LogLevel _httpOverridesLogLevel = LogLevel.Information;
@@ -154,11 +154,24 @@ public static class HttpOverridesExtensions
         return services;
     }
 
-    public static WebApplication UseHttpOverrides(this WebApplication app, ILogger? logger = null)
+    public static WebApplication UseHttpOverrides(this WebApplication app, ILogger? logger = null) => InternalUseHttpOverrides(app, logger);
+
+    public static IApplicationBuilder UseHttpOverrides(this IApplicationBuilder app, ILogger? logger = null) => InternalUseHttpOverrides(app, logger);
+
+    private static TApplication InternalUseHttpOverrides<TApplication>(TApplication app, ILogger? logger) where TApplication : IApplicationBuilder
     {
         logger ??= _loggerLazy.Value;
         logger ??= NullLogger.Instance;
-        var sp = app.Services;
+
+        if (_healthCheckAppOptions == null)
+        {
+            logger.LogCritical("Run builder.AddHttpOverrides() first");
+#pragma warning disable S112 // General exceptions should never be thrown
+            throw new ApplicationException("Run builder.AddHttpOverrides() first");
+#pragma warning restore S112 // General exceptions should never be thrown
+        }
+
+        var sp = app.ApplicationServices;
         var optionsForwardedHeadersOptions = sp.GetRequiredService<IOptions<ForwardedHeadersOptions>>();
         var fho = optionsForwardedHeadersOptions.Value;
 
