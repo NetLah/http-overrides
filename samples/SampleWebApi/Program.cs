@@ -15,6 +15,10 @@ try
     builder.UseSerilog(logger => LogAppEvent(logger, "Application initializing...", appInfo));
     var logger = AppLog.Logger;
 
+    IAssemblyInfo assembly = new AssemblyInfo(typeof(HttpOverridesExtensions).Assembly);
+    logger.LogInformation("Library:{title}; Version:{version} BuildTime:{buildTime}; Framework:{framework}",
+        assembly.Title, assembly.InformationalVersion, assembly.BuildTimestampLocal, assembly.FrameworkName);
+
     // Add services to the container.
 
     builder.Services.AddControllers();

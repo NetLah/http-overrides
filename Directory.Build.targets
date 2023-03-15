@@ -1,15 +1,16 @@
 <Project>
 
   <PropertyGroup>
-    <CurrentFrameworkVersion>6.0.12</CurrentFrameworkVersion>
-    <FrameworkVersion Condition="'$(TargetFramework)' != 'net5.0' And '$(TargetFramework)' != 'net6.0' And '$(TargetFramework)' != 'net7.0' And '$(TargetFramework)' != 'net6.0-windows'">3.1.*</FrameworkVersion>
+    <CurrentFrameworkVersion>6.0.15</CurrentFrameworkVersion>
+    <FrameworkVersion Condition="'$(TargetFramework)' != 'net5.0' And '$(TargetFramework)' != 'net6.0' And '$(TargetFramework)' != 'net7.0' And '$(TargetFramework)' != 'net8.0' And '$(TargetFramework)' != 'net6.0-windows'">3.1.*</FrameworkVersion>
     <FrameworkVersion Condition="'$(TargetFramework)' == 'net5.0'">5.*</FrameworkVersion>
     <FrameworkVersion Condition="'$(TargetFramework)' == 'net6.0' Or '$(TargetFramework)' == 'net6.0-windows'">6.*</FrameworkVersion>
     <FrameworkVersion Condition="'$(TargetFramework)' == 'net7.0'">7.*</FrameworkVersion>
-    <SystemTextJsonVersion Condition="'$(TargetFramework)' != 'net6.0' And '$(TargetFramework)' != 'net7.0' And '$(TargetFramework)' != 'net6.0-windows'">5.*</SystemTextJsonVersion>
-    <SystemTextJsonVersion Condition="'$(TargetFramework)' == 'net6.0' Or '$(TargetFramework)' == 'net7.0' Or '$(TargetFramework)' == 'net6.0-windows'">$(FrameworkVersion)</SystemTextJsonVersion>
-    <SwashbuckleVersion Condition="'$(TargetFramework)' != 'net6.0' And '$(TargetFramework)' != 'net7.0'">5.*</SwashbuckleVersion>
-    <SwashbuckleVersion Condition="'$(TargetFramework)' == 'net6.0' Or '$(TargetFramework)' == 'net7.0'">6.*</SwashbuckleVersion>
+    <FrameworkVersion Condition="'$(TargetFramework)' == 'net8.0'">8.*-*</FrameworkVersion>
+    <SystemTextJsonVersion Condition="'$(TargetFramework)' != 'net6.0' And '$(TargetFramework)' != 'net7.0' And '$(TargetFramework)' != 'net8.0' And '$(TargetFramework)' != 'net6.0-windows'">5.*</SystemTextJsonVersion>
+    <SystemTextJsonVersion Condition="'$(TargetFramework)' == 'net6.0' Or '$(TargetFramework)' == 'net7.0' Or '$(TargetFramework)' == 'net8.0' Or '$(TargetFramework)' == 'net6.0-windows'">$(FrameworkVersion)</SystemTextJsonVersion>
+    <SwashbuckleVersion Condition="'$(TargetFramework)' != 'net6.0' And '$(TargetFramework)' != 'net7.0' And '$(TargetFramework)' != 'net8.0'">5.*</SwashbuckleVersion>
+    <SwashbuckleVersion Condition="'$(TargetFramework)' == 'net6.0' Or '$(TargetFramework)' == 'net7.0' Or '$(TargetFramework)' == 'net8.0'">6.*</SwashbuckleVersion>
   </PropertyGroup>
 
   <ItemGroup>
@@ -97,12 +98,14 @@
     <PackageReference Update="System.Runtime.Loader" Version="4.3.0" />
     <PackageReference Update="System.Runtime.Extensions" Version="4.3.1" />
     <PackageReference Update="Yarp.ReverseProxy" Version="(1.*,2)" />
+    <PackageReference Update="CommunityToolkit.HighPerformance" Version="8.*" />
 
     <!--microsoft extensions-->
     <PackageReference Update="Microsoft.Extensions.ApiDescription.Server" Version="$(FrameworkVersion)" />
     <PackageReference Update="Microsoft.Extensions.Caching.Abstractions" Version="$(FrameworkVersion)" />
     <PackageReference Update="Microsoft.Extensions.Caching.Memory" Version="$(FrameworkVersion)" />
     <PackageReference Update="Microsoft.Extensions.Caching.StackExchangeRedis" Version="$(FrameworkVersion)" />
+    <PackageReference Update="Microsoft.Extensions.Configuration" Version="$(FrameworkVersion)" />
     <PackageReference Update="Microsoft.Extensions.Configuration.Abstractions" Version="$(FrameworkVersion)" />
     <PackageReference Update="Microsoft.Extensions.Configuration.Binder" Version="$(FrameworkVersion)" />
     <PackageReference Update="Microsoft.Extensions.Configuration.CommandLine" Version="$(FrameworkVersion)" />
@@ -116,6 +119,7 @@
     <PackageReference Update="Microsoft.Extensions.DependencyModel" Version="$(FrameworkVersion)" />
     <PackageReference Update="Microsoft.Extensions.Hosting" Version="$(FrameworkVersion)" />
     <PackageReference Update="Microsoft.Extensions.Hosting.Abstractions" Version="$(FrameworkVersion)" />
+    <PackageReference Update="Microsoft.Extensions.Hosting.Systemd" Version="$(FrameworkVersion)" />
     <PackageReference Update="Microsoft.Extensions.Hosting.WindowsServices" Version="$(FrameworkVersion)" />
     <PackageReference Update="Microsoft.Extensions.Logging" Version="$(FrameworkVersion)" />
     <PackageReference Update="Microsoft.Extensions.Logging.Abstractions" Version="$(FrameworkVersion)" />
