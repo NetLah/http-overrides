@@ -6,6 +6,7 @@ MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{22D58284-719D-4C99-8A72-EAA4AD6B6E16}"
 	ProjectSection(SolutionItems) = preProject
 		.editorconfig = .editorconfig
+		DevNotes.md = DevNotes.md
 		Directory.Build.props = Directory.Build.props
 		Directory.Build.targets = Directory.Build.targets
 		README.md = README.md
