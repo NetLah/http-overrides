@@ -16,6 +16,8 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.ApiDescription.Server" />
     <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" />
+    <PackageReference Include="Microsoft.Extensions.DependencyModel" />
+    <PackageReference Include="Microsoft.OpenApi" />
     <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" />
     <PackageReference Include="NetLah.Abstractions" />
     <PackageReference Include="NetLah.Extensions.Configuration" />
