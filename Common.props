@@ -1,0 +1,34 @@
+<Project>
+
+  <PropertyGroup>
+    <CurrentFrameworkVersion>6.0.18</CurrentFrameworkVersion>
+    <ImportedCommonProps>True</ImportedCommonProps>
+    
+    <NET_ID>$([MSBuild]::GetTargetFrameworkIdentifier($(TargetFramework)))</NET_ID>
+    <NET_VER>$([MSBuild]::GetTargetFrameworkVersion($(TargetFramework)))</NET_VER>
+
+    <NET_STD_2_0>False</NET_STD_2_0>
+    <NET_STD_2_1>False</NET_STD_2_1>
+    <NET_3_1>False</NET_3_1>
+    <NET_5_0>False</NET_5_0>
+    <NET_5_0>False</NET_5_0>
+    <NET_6_0>False</NET_6_0>
+    <NET_7_0>False</NET_7_0>
+    <NET_8_0>False</NET_8_0>
+
+    <NET_STD_2_0 Condition="'$(NET_VER)' == '2.0' And '$(NET_ID)' == '.NETStandard'">True</NET_STD_2_0>
+    <NET_STD_2_1 Condition="'$(NET_VER)' == '2.1' And '$(NET_ID)' == '.NETStandard'">True</NET_STD_2_1>
+    <NET_3_1 Condition="'$(NET_VER)' == '3.1' And '$(NET_ID)' == '.NETCoreApp'">True</NET_3_1>
+    <NET_5_0 Condition="'$(NET_VER)' == '5.0' And '$(NET_ID)' == '.NETCoreApp'">True</NET_5_0>
+    <NET_6_0 Condition="'$(NET_VER)' == '6.0' And '$(NET_ID)' == '.NETCoreApp'">True</NET_6_0>
+    <NET_7_0 Condition="'$(NET_VER)' == '7.0' And '$(NET_ID)' == '.NETCoreApp'">True</NET_7_0>
+    <NET_8_0 Condition="'$(NET_VER)' == '8.0' And '$(NET_ID)' == '.NETCoreApp'">True</NET_8_0>
+
+    <NET_3_1_OR_LESS>False</NET_3_1_OR_LESS>
+    <NET_5_1_OR_LESS>False</NET_5_1_OR_LESS>
+    <NET_3_1_OR_LESS Condition="'$(NET_VER)' &lt;= '3.1' And ('$(NET_ID)' == '.NETCoreApp' Or '$(NET_ID)' == '.NETStandard')">True</NET_3_1_OR_LESS>
+    <NET_5_1_OR_LESS Condition="'$(NET_VER)' &lt;= '5.0' And ('$(NET_ID)' == '.NETCoreApp' Or '$(NET_ID)' == '.NETStandard')">True</NET_5_1_OR_LESS>
+
+  </PropertyGroup>
+
+</Project>
