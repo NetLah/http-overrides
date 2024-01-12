@@ -2,22 +2,31 @@
 
   <Import Project="$([MSBuild]::GetPathOfFileAbove('Common.props', '$(MSBuildThisFileDirectory)'))" />
 
-  <PropertyGroup Condition="'$(LowerFrameworkVersion)' == ''">
-    <LowerFrameworkVersion Condition="'$(NET_6_0)' == 'true'">6.0.0</LowerFrameworkVersion>
-    <LowerFrameworkVersion Condition="'$(NET_7_0)' == 'true'">7.0.0</LowerFrameworkVersion>
-    <LowerFrameworkVersion Condition="'$(LowerFrameworkVersion)' == ''">8.0.0-preview.4.*</LowerFrameworkVersion>
+  <Import Project="$(MSBuildThisFileDirectory)Directory.Build.initial.targets" Condition="Exists('$(MSBuildThisFileDirectory)Directory.Build.initial.targets')" />
+
+  <PropertyGroup Condition="'$(LatestDevFrameworkVersion)' == ''">
+    <LatestDevFrameworkVersion>9.*-*</LatestDevFrameworkVersion>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(FrameworkVersion)' == ''">
-    <FrameworkVersion Condition="'$(NET_7_0)' == 'true' Or '$(NET_6_0)' == 'true' Or '$(NET_5_1_OR_LESS)' == 'true'">7.0.0</FrameworkVersion>
-    <FrameworkVersion Condition="'$(FrameworkVersion)' == ''">8.0.0-preview.4.*</FrameworkVersion>
+    <FrameworkVersion Condition="'$(NET_3_1_LESS_OR_STD)' == true">3.1.0</FrameworkVersion>
+    <FrameworkVersion Condition="'$(NET_5_0)' == true">5.0.0</FrameworkVersion>
+    <FrameworkVersion Condition="'$(NET_6_0)' == true">6.0.0</FrameworkVersion>
+    <FrameworkVersion Condition="'$(NET_7_0)' == true">7.0.0</FrameworkVersion>
+    <FrameworkVersion Condition="'$(NET_8_0)' == true">8.0.0</FrameworkVersion>
+    <FrameworkVersion Condition="'$(FrameworkVersion)' == ''">$(LatestDevFrameworkVersion)</FrameworkVersion>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(AspNetFrameworkVersion)' == ''">
+    <AspNetFrameworkVersion>$(FrameworkVersion)</AspNetFrameworkVersion>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(EFCoreFrameworkVersion)' == ''">
+    <EFCoreFrameworkVersion>$(FrameworkVersion)</EFCoreFrameworkVersion>
   </PropertyGroup>
 
   <PropertyGroup>
-    <SystemTextJsonVersion Condition="'$(SystemTextJsonVersion)' == '' And '$(NET_5_1_OR_LESS)' == 'true'">5.0.0</SystemTextJsonVersion>
-    <SystemTextJsonVersion Condition="'$(SystemTextJsonVersion)' == ''">$(FrameworkVersion)</SystemTextJsonVersion>
-
-    <SwashbuckleVersion Condition="'$(SwashbuckleVersion)' == '' And '$(NET_5_1_OR_LESS)' == 'true'">5.0.0</SwashbuckleVersion>
+    <SystemTextJsonVersion Condition="'$(NET_5_0_LESS_OR_STD)' == true">5.0.0</SystemTextJsonVersion>
     <SwashbuckleVersion Condition="'$(SwashbuckleVersion)' == ''">6.0.0</SwashbuckleVersion>
   </PropertyGroup>
 
@@ -27,35 +36,35 @@
     <!--the helpers -->
     <PackageReference Update="NetLah.Abstractions" Version="0.2.1" />
     <PackageReference Update="NetLah.Extensions.CommandLineUtils" Version="0.1.0-a1.2" />
-    <PackageReference Update="NetLah.Extensions.Configuration" Version="0.3.*-*" />
-    <PackageReference Update="NetLah.Extensions.EventAggregator" Version="[0.2.1,1)" />
-    <PackageReference Update="NetLah.Extensions.HttpOverrides" Version="0.3.*-*" />
-    <PackageReference Update="NetLah.Extensions.Logging.Reference" Version="0.3.*-*" />
-    <PackageReference Update="NetLah.Extensions.Logging.Serilog" Version="0.3.*-*" />
-    <PackageReference Update="NetLah.Extensions.Logging.Serilog.AspNetCore" Version="0.3.*-*" />
-    <PackageReference Update="NetLah.Extensions.SpaServices.Hosting" Version="0.3.*-*" />
-    <PackageReference Update="Testing.Dynamic.Json" Version="1.*-*" />
+    <PackageReference Update="NetLah.Extensions.Configuration" Version="0.2.2" />
+    <PackageReference Update="NetLah.Extensions.EventAggregator" Version="0.2.1" />
+    <PackageReference Update="NetLah.Extensions.HttpOverrides" Version="0.3.0-preview1" />
+    <PackageReference Update="NetLah.Extensions.Logging.Reference" Version="1.0.0-rc1" />
+    <PackageReference Update="NetLah.Extensions.Logging.Serilog" Version="1.0.0-rc1" />
+    <PackageReference Update="NetLah.Extensions.Logging.Serilog.AspNetCore" Version="1.0.0-rc1" />
+    <PackageReference Update="NetLah.Extensions.SpaServices.Hosting" Version="0.2.3" />
+    <PackageReference Update="Testing.Dynamic.Json" Version="1.0.0-rc3" />
 
     <!--serilog-->
-    <PackageReference Update="Serilog" Version="2.12.0" />
-    <PackageReference Update="Serilog.AspNetCore" Version="7.0.0" />
+    <PackageReference Update="Serilog" Version="3.1.1" />
+    <PackageReference Update="Serilog.AspNetCore" Version="8.0.0" />
     <PackageReference Update="Serilog.Enrichers.CorrelationId" Version="3.0.0" />
     <PackageReference Update="Serilog.Enrichers.Environment" Version="2.2.0" />
     <PackageReference Update="Serilog.Enrichers.Thread" Version="3.1.0" />
-    <PackageReference Update="Serilog.Extensions.Hosting" Version="7.0.0" />
-    <PackageReference Update="Serilog.Extensions.Logging" Version="7.0.0" />
-    <PackageReference Update="Serilog.Formatting.Compact" Version="1.1.0" />
-    <PackageReference Update="Serilog.Settings.Configuration" Version="7.0.0" />
+    <PackageReference Update="Serilog.Extensions.Hosting" Version="8.0.0" />
+    <PackageReference Update="Serilog.Extensions.Logging" Version="8.0.0" />
+    <PackageReference Update="Serilog.Formatting.Compact" Version="2.0.0" />
+    <PackageReference Update="Serilog.Settings.Configuration" Version="8.0.0" />
     <PackageReference Update="Serilog.Sinks.AzureAnalytics" Version="5.0.0" />
-    <PackageReference Update="Serilog.Sinks.Console" Version="4.0.0" />
+    <PackageReference Update="Serilog.Sinks.Console" Version="5.0.0" />
     <PackageReference Update="Serilog.Sinks.Debug" Version="2.0.0" />
     <PackageReference Update="Serilog.Sinks.File" Version="5.0.0" />
     <PackageReference Update="Serilog.Sinks.PeriodicBatching" Version="3.0.0" />
-    <PackageReference Update="Serilog.Sinks.Seq" Version="5.0.0" />
+    <PackageReference Update="Serilog.Sinks.Seq" Version="6.0.0" />
 
     <!--misc-->
-    <PackageReference Update="AutoMapper" Version="12.0.0" />
-    <PackageReference Update="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="12.0.0" />
+    <PackageReference Update="AutoMapper" Version="11.0.0" />
+    <PackageReference Update="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="11.0.0" />
     <PackageReference Update="Newtonsoft.Json" Version="10.0.2" />
 
     <!--identityserver4 -->
@@ -69,7 +78,7 @@
     <PackageReference Update="Azure.Core.Amqp" Version="1.0.0" />
     <PackageReference Update="Azure.Extensions.AspNetCore.DataProtection.Blobs" Version="1.0.0" />
     <PackageReference Update="Azure.Extensions.AspNetCore.DataProtection.Keys" Version="1.0.0" />
-    <PackageReference Update="Azure.Identity" Version="1.0.0" />
+    <PackageReference Update="Azure.Identity" Version="1.10.2" />
     <PackageReference Update="Azure.Messaging.ServiceBus" Version="7.0.0" />
     <PackageReference Update="Azure.Security.KeyVault.Certificates" Version="4.0.0" />
     <PackageReference Update="Azure.Security.KeyVault.Keys" Version="4.0.0" />
@@ -84,7 +93,9 @@
     <PackageReference Update="Microsoft.Extensions.Logging.ApplicationInsights" Version="2.0.0" />
 
     <!--microsoft identity-->
-    <PackageReference Update="Microsoft.IdentityModel.Protocols.OpenIdConnect" Version="6.20.0" />
+    <PackageReference Update="Microsoft.Graph.Core" Version="3.0.0" />
+    <PackageReference Update="Microsoft.Identity.Client.Extensions.Msal" Version="2.31.0" />
+    <PackageReference Update="Microsoft.IdentityModel.Protocols.OpenIdConnect" Version="7.0.3" />
 
     <!--open api-->
     <PackageReference Update="Microsoft.OpenApi" Version="1.0.0" />
