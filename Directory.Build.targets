@@ -53,7 +53,7 @@
     <PackageReference Update="NetLah.Extensions.CommandLineUtils" Version="0.*-*" />
     <PackageReference Update="NetLah.Extensions.Configuration" Version="1.*-*" />
     <PackageReference Update="NetLah.Extensions.EventAggregator" Version="0.*-*" />
-    <PackageReference Update="NetLah.Extensions.HttpOverrides" Version="0.*-*" />
+    <PackageReference Update="NetLah.Extensions.HttpOverrides" Version="1.*-*" />
     <PackageReference Update="NetLah.Extensions.Logging.Reference" Version="1.*-*" />
     <PackageReference Update="NetLah.Extensions.Logging.Serilog" Version="1.*-*" />
     <PackageReference Update="NetLah.Extensions.Logging.Serilog.AspNetCore" Version="1.*-*" />
