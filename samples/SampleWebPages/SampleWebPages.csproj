@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <TargetFrameworks>net8.0;net7.0;net6.0</TargetFrameworks>
+    <TargetFrameworks>net9.0;net8.0;net7.0;net6.0</TargetFrameworks>
     <UserSecretsId>netlah-http-overrides-pages-ed3g</UserSecretsId>
     <IsPackable>false</IsPackable>
   </PropertyGroup>
@@ -20,6 +20,7 @@
     <PackageReference Include="NetLah.Abstractions" />
     <PackageReference Include="NetLah.Extensions.Configuration" />
     <PackageReference Include="NetLah.Extensions.HttpOverrides" />
+    <PackageReference Include="NetLah.Extensions.Logging.Reference" />
     <PackageReference Include="NetLah.Extensions.Logging.Serilog.AspNetCore" />
     <PackageReference Include="Serilog" />
     <PackageReference Include="Serilog.AspNetCore" />
