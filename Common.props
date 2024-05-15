@@ -82,6 +82,10 @@
 
   </PropertyGroup>
 
+  <PropertyGroup>
+    <DefineConstants Condition="'$(NET_6_0_LESS)' == true">NET_6_0_LESS</DefineConstants>
+  </PropertyGroup>
+
   <Import Project="$(MSBuildThisFileDirectory)Common.override.props" Condition="Exists('$(MSBuildThisFileDirectory)Common.override.props')" />
 
 </Project>

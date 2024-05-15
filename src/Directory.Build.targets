@@ -3,7 +3,11 @@
   <Import Project="$([MSBuild]::GetPathOfFileAbove('Common.props', '$(MSBuildThisFileDirectory)'))" Condition="'$(ImportedCommonProps)' == ''" />
 
   <Import Project="$(MSBuildThisFileDirectory)Directory.Build.initial.targets" Condition="Exists('$(MSBuildThisFileDirectory)Directory.Build.initial.targets')" />
-
+  
+  <PropertyGroup Condition="'$(PackageLibraryTargetFlag)' == ''">
+    <PackageLibraryTargetFlag>true</PackageLibraryTargetFlag>
+  </PropertyGroup>
+  
   <PropertyGroup Condition="'$(LatestDevFrameworkVersion)' == ''">
     <LatestDevFrameworkVersion>9.0.0-preview.1.*</LatestDevFrameworkVersion>
   </PropertyGroup>
@@ -27,6 +31,8 @@
   </PropertyGroup>
 
   <PropertyGroup>
+    <NpgsqlVersion Condition="'$(NpgsqlVersion)' == '' And '$(NET_3_1_LESS_OR_STD)' == true">4.1.2</NpgsqlVersion>
+    <NpgsqlVersion Condition="'$(NpgsqlVersion)' == '' And '$(NET_9_0_UP)' == true">8.0.2</NpgsqlVersion>
     <SystemTextJsonVersion Condition="'$(NET_5_0_LESS_OR_STD)' == true">5.0.0</SystemTextJsonVersion>
     <SwashbuckleVersion Condition="'$(SwashbuckleVersion)' == ''">6.0.0</SwashbuckleVersion>
   </PropertyGroup>
@@ -37,13 +43,13 @@
     <!--the helpers -->
     <PackageReference Update="NetLah.Abstractions" Version="1.0.0" />
     <PackageReference Update="NetLah.Extensions.CommandLineUtils" Version="0.1.0-a1.2" />
-    <PackageReference Update="NetLah.Extensions.Configuration" Version="1.0.0-rc2" />
+    <PackageReference Update="NetLah.Extensions.Configuration" Version="1.0.0-rc3.2" />
     <PackageReference Update="NetLah.Extensions.EventAggregator" Version="1.0.0-rc2" />
     <PackageReference Update="NetLah.Extensions.HttpOverrides" Version="1.0.0-rc2" />
     <PackageReference Update="NetLah.Extensions.Logging.Reference" Version="1.0.0-rc2" />
     <PackageReference Update="NetLah.Extensions.Logging.Serilog" Version="1.0.0-rc2" />
     <PackageReference Update="NetLah.Extensions.Logging.Serilog.AspNetCore" Version="1.0.0-rc2" />
-    <PackageReference Update="NetLah.Extensions.SpaServices.Hosting" Version="1.0.0-rc1" />
+    <PackageReference Update="NetLah.Extensions.SpaServices.Hosting" Version="1.0.0-rc3" />
     <PackageReference Update="Testing.Dynamic.Json" Version="1.0.0-rc3" />
 
     <!--serilog-->
