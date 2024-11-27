@@ -16,7 +16,7 @@
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="NetLah.Extensions.HttpOverrides" Version="1.0.0-rc1" />
+  <PackageReference Include="NetLah.Extensions.HttpOverrides" Version="1.0.0" />
 </ItemGroup>
 ```
 
