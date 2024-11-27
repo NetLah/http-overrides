@@ -52,7 +52,21 @@ public class DiagnosticsController : ControllerBase
     }
 
     // Add multi connections query
-    [HttpGet] public IActionResult Connection1([FromServices] HttpContextInfo httpContextInfo) => Connection(httpContextInfo, "Connection1");
-    [HttpGet] public IActionResult Connection2([FromServices] HttpContextInfo httpContextInfo) => Connection(httpContextInfo, "Connection2");
-    [HttpGet] public IActionResult Connection3([FromServices] HttpContextInfo httpContextInfo) => Connection(httpContextInfo, "Connection3");
+    [HttpGet]
+    public IActionResult Connection1([FromServices] HttpContextInfo httpContextInfo)
+    {
+        return Connection(httpContextInfo, "Connection1");
+    }
+
+    [HttpGet]
+    public IActionResult Connection2([FromServices] HttpContextInfo httpContextInfo)
+    {
+        return Connection(httpContextInfo, "Connection2");
+    }
+
+    [HttpGet]
+    public IActionResult Connection3([FromServices] HttpContextInfo httpContextInfo)
+    {
+        return Connection(httpContextInfo, "Connection3");
+    }
 }

@@ -10,9 +10,11 @@ namespace NetLah.Extensions.HttpOverrides.Test;
 public class ConfigForwardedHeaderTest
 {
     private static IConfiguration NewConfig(Dictionary<string, string?> initialData)
-        => new ConfigurationBuilder()
+    {
+        return new ConfigurationBuilder()
             .AddInMemoryCollection(initialData)
             .Build();
+    }
 
     [Fact]
     public void DefaultForwardedHeaderOptionsTest()
@@ -84,5 +86,4 @@ public class ConfigForwardedHeaderTest
         Assert.Equal(LogLevel.Warning, HttpOverridesExtensions.GetLogLevel(configuration, $"{DefaultConfiguration.HttpOverridesKey}:{DefaultConfiguration.HttpOverridesLogLevelKey}"));
         Assert.Equal(LogLevel.Error, HttpOverridesExtensions.GetLogLevel(configuration, $"{DefaultConfiguration.HttpLoggingKey}:{DefaultConfiguration.HttpLoggingLogLevelKey}"));
     }
-
 }

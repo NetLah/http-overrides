@@ -37,7 +37,9 @@ public class EchoController : ControllerBase
     }
 
     private static IDictionary<string, string>? ToDict(IEnumerable<KeyValuePair<string, StringValues>>? headers)
-        => headers?.ToDictionary(e => e.Key, e => e.Value.ToString());
+    {
+        return headers?.ToDictionary(e => e.Key, e => e.Value.ToString());
+    }
 
     public class MyResult
     {

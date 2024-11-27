@@ -15,7 +15,10 @@ internal class HealthCheckResponseWriters
 
     public HealthCheckResponseWriters(string? prefix, string? suffix)
     {
-        string Build(HealthStatus status) => $"{prefix}{status}{suffix}";
+        string Build(HealthStatus status)
+        {
+            return $"{prefix}{status}{suffix}";
+        }
 
         DegradedBytes = Encoding.UTF8.GetBytes(Build(HealthStatus.Degraded));
         HealthyBytes = Encoding.UTF8.GetBytes(Build(HealthStatus.Healthy));

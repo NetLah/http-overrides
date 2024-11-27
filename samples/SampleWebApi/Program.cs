@@ -79,8 +79,10 @@ try
     app.Run();
 
     static void LogAppEvent(ILogger logger, string appEvent, IAssemblyInfo appInfo)
-        => logger.LogInformation("{ApplicationEvent} App:{title}; Version:{version} BuildTime:{buildTime}; Framework:{framework}",
-        appEvent, appInfo.Title, appInfo.InformationalVersion, appInfo.BuildTimestampLocal, appInfo.FrameworkName);
+    {
+        logger.LogInformation("{ApplicationEvent} App:{title}; Version:{version} BuildTime:{buildTime}; Framework:{framework}",
+            appEvent, appInfo.Title, appInfo.InformationalVersion, appInfo.BuildTimestampLocal, appInfo.FrameworkName);
+    }
 }
 catch (Exception ex)
 {
@@ -88,5 +90,5 @@ catch (Exception ex)
 }
 finally
 {
-    Serilog.Log.CloseAndFlush();
+    await Serilog.Log.CloseAndFlushAsync();
 }

@@ -154,9 +154,15 @@ public static class HttpOverridesExtensions
         return services;
     }
 
-    public static WebApplication UseHttpOverrides(this WebApplication app, ILogger? logger = null) => InternalUseHttpOverrides(app, logger);
+    public static WebApplication UseHttpOverrides(this WebApplication app, ILogger? logger = null)
+    {
+        return InternalUseHttpOverrides(app, logger);
+    }
 
-    public static IApplicationBuilder UseHttpOverrides(this IApplicationBuilder app, ILogger? logger = null) => InternalUseHttpOverrides(app, logger);
+    public static IApplicationBuilder UseHttpOverrides(this IApplicationBuilder app, ILogger? logger = null)
+    {
+        return InternalUseHttpOverrides(app, logger);
+    }
 
     private static TApplication InternalUseHttpOverrides<TApplication>(TApplication app, ILogger? logger) where TApplication : IApplicationBuilder
     {
@@ -166,9 +172,7 @@ public static class HttpOverridesExtensions
         if (_healthCheckAppOptions == null)
         {
             logger.LogCritical("Run builder.AddHttpOverrides() first");
-#pragma warning disable S112 // General exceptions should never be thrown
             throw new ApplicationException("Run builder.AddHttpOverrides() first");
-#pragma warning restore S112 // General exceptions should never be thrown
         }
 
         var sp = app.ApplicationServices;
@@ -234,9 +238,7 @@ public static class HttpOverridesExtensions
         if (_isForwardedHeadersEnabled)
         {
             var bypassNetLahHttpOverridesMessage = $"Bypass HttpOverrides configuration settings because {DefaultConfiguration.AspNetCoreForwardedHeadersEnabledKey} is True";
-#pragma warning disable CA2254 // Template should be a static expression
             logger.Log(_httpOverridesLogLevel, bypassNetLahHttpOverridesMessage);
-#pragma warning restore CA2254 // Template should be a static expression
         }
 
         if (fho.KnownProxies.Count > 0 || fho.KnownNetworks.Count > 0 || fho.ForwardedHeaders != ForwardedHeaders.None)
@@ -327,18 +329,12 @@ public static class HttpOverridesExtensions
         }
     }
 
-#pragma warning disable S3260 // Non-derived "private" classes and records should be "sealed"
-#pragma warning disable S3459 // Unassigned members should be removed
-#pragma warning disable S1144 // Unused private types or members should be removed
     private class HttpLoggingConfig
-#pragma warning restore S3260 // Non-derived "private" classes and records should be "sealed"
     {
         public string? RequestHeaders { get; set; }
         public string? ResponseHeaders { get; set; }
         public List<string>? MediaTypeOptions { get; set; }
     }
-#pragma warning restore S1144 // Unused private types or members should be removed
-#pragma warning restore S3459 // Unassigned members should be removed
 
     internal static LogLevel GetLogLevel(IConfiguration configuration, string key, LogLevel defaultLogLevel = LogLevel.Debug)
     {
