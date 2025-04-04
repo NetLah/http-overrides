@@ -3,7 +3,7 @@
   <PropertyGroup>
     <PackageId>NetLah.Extensions.HttpOverrides</PackageId>
     <PackageTags>httpoverrides;http-overrides;configurable;aspnetcore;dotnet;netcore</PackageTags>
-    <TargetFrameworks>net9.0;net8.0;net7.0;net6.0</TargetFrameworks>
+    <TargetFrameworks>net10.0;net9.0;net8.0;net7.0;net6.0</TargetFrameworks>
     <Description>Library support setting ASP.NET Core HttpOverrides from configuration</Description>
     <SignAssembly>true</SignAssembly>
     <AssemblyOriginatorKeyFile>../../NetLah.snk</AssemblyOriginatorKeyFile>
