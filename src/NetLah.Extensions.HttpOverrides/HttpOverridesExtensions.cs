@@ -128,8 +128,8 @@ public static class HttpOverridesExtensions
             var isClearRequestHeaders = httpLoggingConfigurationSection[DefaultConfiguration.ClearRequestHeadersKey].IsTrue();
             var isClearResponseHeaders = httpLoggingConfigurationSection[DefaultConfiguration.ClearResponseHeadersKey].IsTrue();
             var httpLoggingConfig = httpLoggingConfigurationSection.Get<HttpLoggingConfig>();
-            var requestHeaders = httpLoggingConfig?.RequestHeaders.SplitSet() ?? new HashSet<string>();
-            var responseHeaders = httpLoggingConfig?.ResponseHeaders.SplitSet() ?? new HashSet<string>();
+            var requestHeaders = httpLoggingConfig?.RequestHeaders.SplitSet() ?? [];
+            var responseHeaders = httpLoggingConfig?.ResponseHeaders.SplitSet() ?? [];
             var mediaTypeOptions = httpLoggingConfig?.MediaTypeOptions ?? Enumerable.Empty<string>();
 
             if (isClearRequestHeaders || isClearResponseHeaders || requestHeaders.Any() || responseHeaders.Any() || mediaTypeOptions.Any())

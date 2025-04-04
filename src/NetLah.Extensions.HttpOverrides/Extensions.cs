@@ -23,7 +23,7 @@ internal static class Extensions
             ?.Split(Separator, StringSplitOptions.RemoveEmptyEntries)
             .Where(i => !string.IsNullOrEmpty(i))
             .ToHashSet()
-            ?? new HashSet<string>();
+            ?? [];
     }
 
     public static string? ToStringComma(this IList<IPNetwork>? value)

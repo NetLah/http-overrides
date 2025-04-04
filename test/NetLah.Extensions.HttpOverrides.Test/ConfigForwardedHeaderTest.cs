@@ -19,7 +19,7 @@ public class ConfigForwardedHeaderTest
     [Fact]
     public void DefaultForwardedHeaderOptionsTest()
     {
-        var configuration = NewConfig(new Dictionary<string, string?>());
+        var configuration = NewConfig([]);
         var services = new ServiceCollection();
         HttpOverridesExtensions.AddHttpOverrides(services, configuration);
         var serviceProvider = services.BuildServiceProvider();
