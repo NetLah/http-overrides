@@ -33,7 +33,11 @@ public class ConfigForwardedHeaderTest
         Assert.Equal(ForwardedHeaders.None, options.ForwardedHeaders);
         Assert.Equal(1, options.ForwardLimit);
         Assert.Equal("::1", string.Join(",", options.KnownProxies));
+#if NET10_0_OR_GREATER
+        Assert.Equal("127.0.0.0/8", string.Join(",", options.KnownIPNetworks.Select(ipn => $"{ipn.BaseAddress}/{ipn.PrefixLength}")));
+#else
         Assert.Equal("127.0.0.1/8", string.Join(",", options.KnownNetworks.Select(ipn => $"{ipn.Prefix}/{ipn.PrefixLength}")));
+#endif
         Assert.Equal("", string.Join(",", options.AllowedHosts));
         Assert.False(options.RequireHeaderSymmetry);
 

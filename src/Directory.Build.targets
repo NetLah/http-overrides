@@ -3,11 +3,11 @@
   <Import Project="$([MSBuild]::GetPathOfFileAbove('Common.props', '$(MSBuildThisFileDirectory)'))" Condition="'$(ImportedCommonProps)' == ''" />
 
   <Import Project="$(MSBuildThisFileDirectory)Directory.Build.initial.targets" Condition="Exists('$(MSBuildThisFileDirectory)Directory.Build.initial.targets')" />
-  
+
   <PropertyGroup Condition="'$(PackageLibraryTargetFlag)' == ''">
     <PackageLibraryTargetFlag>false</PackageLibraryTargetFlag>
   </PropertyGroup>
-  
+
   <PropertyGroup Condition="'$(LatestDevFrameworkVersion)' == ''">
     <LatestDevFrameworkVersion>11.2.*-*</LatestDevFrameworkVersion>
   </PropertyGroup>
@@ -19,7 +19,8 @@
     <FrameworkVersion Condition="'$(NET_7_0)' == true">7.0.0</FrameworkVersion>
     <FrameworkVersion Condition="'$(NET_8_0)' == true">8.0.0</FrameworkVersion>
     <FrameworkVersion Condition="'$(NET_9_0)' == true">9.0.0</FrameworkVersion>
-    <FrameworkVersion Condition="'$(NET_10_0)' == true">10.0.0-preview.1.*</FrameworkVersion>
+    <FrameworkVersion Condition="'$(NET_10_0)' == true">10.0.0</FrameworkVersion>
+    <FrameworkVersion Condition="'$(NET_11_0)' == true">11.0.0-preview.1.*</FrameworkVersion>
     <FrameworkVersion Condition="'$(FrameworkVersion)' == ''">$(LatestDevFrameworkVersion)</FrameworkVersion>
   </PropertyGroup>
 
@@ -40,16 +41,16 @@
     <SwashbuckleVersion Condition="'$(SwashbuckleVersion)' == ''">6.0.0</SwashbuckleVersion>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(SerilogVersion)' == '' And '$(NET_7_0)' == true">
-    <SerilogVersion>7.0.0</SerilogVersion>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(SerilogVersion)' == '' And '$(NET_8_0)' == true">
-    <SerilogVersion>8.0.0</SerilogVersion>
-  </PropertyGroup>
-
   <PropertyGroup Condition="'$(SerilogVersion)' == ''">
-    <SerilogVersion>9.0.0</SerilogVersion>
+    <SerilogVersion Condition="'$(NET_7_0)' == true">7.0.0</SerilogVersion>
+    <SerilogVersion Condition="'$(NET_8_0)' == true">8.0.0</SerilogVersion>
+    <SerilogVersion Condition="'$(NET_9_0)' == true">9.0.0</SerilogVersion>
+    <SerilogVersion Condition="'$(SerilogVersion)' == ''">9.0.0</SerilogVersion>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Serilog10Version)' == ''">
+    <Serilog10Version Condition="'$(Serilog10Version)' == '' And '$(NET_10_0)' == true">10.0.0</Serilog10Version>
+    <Serilog10Version Condition="'$(Serilog10Version)' == ''">$(SerilogVersion)</Serilog10Version>
   </PropertyGroup>
 
   <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.targets', '$(MSBuildThisFileDirectory)../'))" />
@@ -59,13 +60,15 @@
     <PackageReference Update="NetLah.Abstractions" Version="1.0.0" />
     <PackageReference Update="NetLah.Extensions.ClockProvider" Version="1.0.0" />
     <PackageReference Update="NetLah.Extensions.CommandLineUtils" Version="0.1.0-a1.2" />
-    <PackageReference Update="NetLah.Extensions.Configuration" Version="1.0.0" />
+    <PackageReference Update="NetLah.Extensions.Configuration" Version="1.0.1" />
     <PackageReference Update="NetLah.Extensions.EventAggregator" Version="1.0.0-rc2" />
-    <PackageReference Update="NetLah.Extensions.HttpOverrides" Version="1.0.0-rc2" />
+    <PackageReference Update="NetLah.Extensions.HttpOverrides" Version="1.0.0" />
     <PackageReference Update="NetLah.Extensions.Logging.Reference" Version="1.0.0" />
-    <PackageReference Update="NetLah.Extensions.Logging.Serilog" Version="1.0.0" />
-    <PackageReference Update="NetLah.Extensions.Logging.Serilog.AspNetCore" Version="1.0.0" />
-    <PackageReference Update="NetLah.Extensions.SpaServices.Hosting" Version="1.0.0-rc3" />
+    <PackageReference Update="NetLah.Extensions.Logging.Serilog" Version="1.0.1" Condition="'$(NET_10_0_UP)' == true" />
+    <PackageReference Update="NetLah.Extensions.Logging.Serilog.AspNetCore" Version="1.0.1" Condition="'$(NET_10_0_UP)' == true" />
+    <PackageReference Update="NetLah.Extensions.Logging.Serilog" Version="1.0.0" Condition="'$(NET_9_0_LESS)' == true" />
+    <PackageReference Update="NetLah.Extensions.Logging.Serilog.AspNetCore" Version="1.0.0" Condition="'$(NET_9_0_LESS)' == true" />
+    <PackageReference Update="NetLah.Extensions.SpaServices.Hosting" Version="1.2.0" />
     <PackageReference Update="Testing.Dynamic.Json" Version="1.0.0" />
 
     <!--serilog-->
