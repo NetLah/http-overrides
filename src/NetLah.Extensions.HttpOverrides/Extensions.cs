@@ -1,5 +1,9 @@
 ﻿using System.Net;
+#if NET10_0_OR_GREATER
+using IPNetwork = System.Net.IPNetwork;
+#else
 using IPNetwork = Microsoft.AspNetCore.HttpOverrides.IPNetwork;
+#endif
 
 namespace NetLah.Extensions.HttpOverrides;
 
@@ -26,6 +30,17 @@ internal static class Extensions
             ?? [];
     }
 
+#if NET10_0_OR_GREATER
+    public static string? ToStringComma(this IList<IPNetwork>? value)
+    {
+        return value == null ? null : string.Join(",", value.Select(ToString));
+
+        static string ToString(IPNetwork ipNetwork)
+        {
+            return $"{ipNetwork.BaseAddress}/{ipNetwork.PrefixLength}";
+        }
+    }
+#else
     public static string? ToStringComma(this IList<IPNetwork>? value)
     {
         return value == null ? null : string.Join(",", value.Select(ToString));
@@ -35,6 +50,7 @@ internal static class Extensions
             return $"{ipNetwork.Prefix}/{ipNetwork.PrefixLength}";
         }
     }
+#endif
 
     public static string? ToStringComma(this IList<IPAddress>? value)
     {

@@ -9,6 +9,11 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using NetLah.Extensions.Logging;
+#if NET10_0_OR_GREATER
+using IPNetwork = System.Net.IPNetwork;
+#else
+using IPNetwork = Microsoft.AspNetCore.HttpOverrides.IPNetwork;
+#endif
 
 namespace NetLah.Extensions.HttpOverrides;
 
@@ -50,7 +55,7 @@ public static class HttpOverridesExtensions
         {
             var logger = EnsureLogger();
             var logLevel = healthCheckAppOptions.LogLevel;
-            logger.LogTrace("HealthCheck LogLevel={logLevel}", logLevel);
+            logger.LogTrace("HealthCheck LogLevel={LogLevel}", logLevel);
 
             if (healthCheckConfigurationSection.GetChildren().Any())
             {
@@ -73,7 +78,7 @@ public static class HttpOverridesExtensions
             }
             else if (!string.IsNullOrEmpty(healthCheckAppOptions.Prefix) || !string.IsNullOrEmpty(healthCheckAppOptions.Suffix))
             {
-                logger.Log(logLevel, "HealthCheckOptions customize Prefix:{prefix} and Suffix:{suffix}", healthCheckAppOptions.Prefix, healthCheckAppOptions.Suffix);
+                logger.Log(logLevel, "HealthCheckOptions customize Prefix:{Prefix} and Suffix:{Suffix}", healthCheckAppOptions.Prefix, healthCheckAppOptions.Suffix);
 
                 var writer = HealthCheckResponseWriters.Instance = new HealthCheckResponseWriters(healthCheckAppOptions.Prefix, healthCheckAppOptions.Suffix);
                 services.Configure<HealthCheckOptions>(options =>
@@ -93,7 +98,7 @@ public static class HttpOverridesExtensions
         {
             var logger = EnsureLogger();
 
-            logger.LogTrace("HttpOverrides LogLevel={logLevel}", _httpOverridesLogLevel);
+            logger.LogTrace("HttpOverrides LogLevel={LogLevel}", _httpOverridesLogLevel);
 
             logger.Log(_httpOverridesLogLevel, "Attempt to load ForwardedHeadersOptions from configuration");
 
@@ -107,7 +112,11 @@ public static class HttpOverridesExtensions
 
                 ProcessKnownProxies(httpOverridesConfigurationSection, options);
 
+#if NET10_0_OR_GREATER
+                ProcessKnownIPNetworks(httpOverridesConfigurationSection, options);
+#else
                 ProcessKnownNetworks(httpOverridesConfigurationSection, options);
+#endif
             });
         }
 
@@ -120,7 +129,7 @@ public static class HttpOverridesExtensions
         {
             var logger = EnsureLogger();
 
-            logger.LogTrace("HttpLogging LogLevel={logLevel}", _httpLoggingLogLevel);
+            logger.LogTrace("HttpLogging LogLevel={LogLevel}", _httpLoggingLogLevel);
 
             logger.Log(_httpLoggingLogLevel, "Attempt to load HttpLoggingOptions from configuration");
 
@@ -193,7 +202,7 @@ public static class HttpOverridesExtensions
             if (_healthCheckAppOptions.Paths is { } pathArrays && pathArrays.Length > 0)
             {
                 var paths = pathArrays.Select(p => (PathString)p).ToArray();
-                logger.Log(logLevel, "Use HealthChecks Port:{port} Paths:{paths}", port, paths);
+                logger.Log(logLevel, "Use HealthChecks Port:{Port} Paths:{Paths}", port, paths);
 
                 bool predicate(HttpContext c)
                 {
@@ -217,7 +226,7 @@ public static class HttpOverridesExtensions
             else
             {
                 var healthChecksPath = _healthCheckAppOptions.Path;
-                logger.Log(logLevel, "Use HealthChecks Port:{port} Path:{path}", port, healthChecksPath);
+                logger.Log(logLevel, "Use HealthChecks Port:{Port} Path:{Path}", port, healthChecksPath);
                 if (port.HasValue)
                 {
                     app.UseHealthChecks(healthChecksPath, port.Value);
@@ -232,7 +241,7 @@ public static class HttpOverridesExtensions
         var hostFilteringOptions = sp.GetRequiredService<IOptions<Microsoft.AspNetCore.HostFiltering.HostFilteringOptions>>();
         if (hostFilteringOptions?.Value is { } hostFiltering)
         {
-            logger.Log(_httpOverridesLogLevel, "HostFiltering: {@hostFiltering}", hostFiltering);
+            logger.Log(_httpOverridesLogLevel, "HostFiltering: {@HostFiltering}", hostFiltering);
         }
 
         if (_isForwardedHeadersEnabled)
@@ -241,45 +250,59 @@ public static class HttpOverridesExtensions
             logger.Log(_httpOverridesLogLevel, bypassNetLahHttpOverridesMessage);
         }
 
+#if NET10_0_OR_GREATER
+        if (fho.KnownProxies.Count > 0 || fho.KnownIPNetworks.Count > 0 || fho.ForwardedHeaders != ForwardedHeaders.None)
+        {
+            logger.Log(_httpOverridesLogLevel, "ForwardLimit: {ForwardLimit}", fho.ForwardLimit);
+        }
+#else
         if (fho.KnownProxies.Count > 0 || fho.KnownNetworks.Count > 0 || fho.ForwardedHeaders != ForwardedHeaders.None)
         {
-            logger.Log(_httpOverridesLogLevel, "ForwardLimit: {forwardLimit}", fho.ForwardLimit);
+            logger.Log(_httpOverridesLogLevel, "ForwardLimit: {ForwardLimit}", fho.ForwardLimit);
         }
+#endif
 
         if (fho.KnownProxies.Count > 0)
         {
-            logger.Log(_httpOverridesLogLevel, "KnownProxies: {knownProxies}", fho.KnownProxies.ToStringComma());
+            logger.Log(_httpOverridesLogLevel, "KnownProxies: {KnownProxies}", fho.KnownProxies.ToStringComma());
         }
 
+#if NET10_0_OR_GREATER
+        if (fho.KnownIPNetworks.Count > 0)
+        {
+            logger.Log(_httpOverridesLogLevel, "KnownIPNetworks: {KnownIPNetworks}", fho.KnownIPNetworks.ToStringComma());
+        }
+#else
         if (fho.KnownNetworks.Count > 0)
         {
-            logger.Log(_httpOverridesLogLevel, "KnownNetworks: {knownNetworks}", fho.KnownNetworks.ToStringComma());
+            logger.Log(_httpOverridesLogLevel, "KnownNetworks: {KnownNetworks}", fho.KnownNetworks.ToStringComma());
         }
+#endif
 
         if (fho.ForwardedHeaders != ForwardedHeaders.None)
         {
             var forwardedHeaders = string.Join(",", fho.ForwardedHeaders);
             if (_isForwardedHeadersEnabled)
             {
-                logger.Log(_httpOverridesLogLevel, "ForwardedHeaders: {forwardedHeaders}", forwardedHeaders);
+                logger.Log(_httpOverridesLogLevel, "ForwardedHeaders: {ForwardedHeaders}", forwardedHeaders);
             }
             else
             {
                 app.UseForwardedHeaders();
-                logger.Log(_httpOverridesLogLevel, "Use ForwardedHeaders: {forwardedHeaders}", forwardedHeaders);
+                logger.Log(_httpOverridesLogLevel, "Use ForwardedHeaders: {ForwardedHeaders}", forwardedHeaders);
             }
         }
 
         if (fho.AllowedHosts.Count > 0)
         {
             var allowedHosts = string.Join(",", fho.AllowedHosts);
-            logger.Log(_httpOverridesLogLevel, "AllowedHosts: {allowedHosts}", allowedHosts);
+            logger.Log(_httpOverridesLogLevel, "AllowedHosts: {AllowedHosts}", allowedHosts);
         }
 
         if (_isHttpLoggingEnabled)
         {
             var httpLogging = sp.GetRequiredService<IOptions<HttpLoggingOptions>>()?.Value;
-            logger.Log(_httpLoggingLogLevel, "Use HttpLogging LoggingFields:{loggingFields} MediaTypeOptions:{mediaTypeOptions} RequestBodyLogLimit:{requestBodyLogLimit} ResponseBodyLogLimit:{responseBodyLogLimit} RequestHeaders:{requestHeaders} ResponseHeaders:{responseHeaders}",
+            logger.Log(_httpLoggingLogLevel, "Use HttpLogging LoggingFields:{LoggingFields} MediaTypeOptions:{MediaTypeOptions} RequestBodyLogLimit:{RequestBodyLogLimit} ResponseBodyLogLimit:{ResponseBodyLogLimit} RequestHeaders:{RequestHeaders} ResponseHeaders:{ResponseHeaders}",
                 httpLogging?.LoggingFields, httpLogging?.MediaTypeOptions, httpLogging?.RequestBodyLogLimit, httpLogging?.ResponseBodyLogLimit,
                 string.Join(',', httpLogging?.RequestHeaders ?? Enumerable.Empty<string>()),
                 string.Join(',', httpLogging?.ResponseHeaders ?? Enumerable.Empty<string>()));
@@ -289,6 +312,33 @@ public static class HttpOverridesExtensions
         return app;
     }
 
+#if NET10_0_OR_GREATER
+    private static void ProcessKnownIPNetworks(IConfiguration configuration, ForwardedHeadersOptions options)
+    {
+        var knownNetworks = configuration[DefaultConfiguration.KnownIPNetworksKey] ?? configuration[DefaultConfiguration.KnownNetworksKey];
+        if (knownNetworks != null || configuration[DefaultConfiguration.ClearKnownIPNetworksKey].IsTrue() || configuration[DefaultConfiguration.ClearKnownNetworksKey].IsTrue())
+        {
+            options.KnownIPNetworks.Clear();
+        }
+
+        foreach (var item in knownNetworks.SplitSet())
+        {
+            var net = item.Split(['/'], StringSplitOptions.RemoveEmptyEntries);
+            if (net.Length == 2)
+            {
+                var prefix = System.Net.IPAddress.Parse(net[0]);
+                var prefixLength = int.Parse(net[1]);
+                options.KnownIPNetworks.Add(new IPNetwork(prefix, prefixLength));
+            }
+            else if (net.Length == 1)
+            {
+                var prefix = System.Net.IPAddress.Parse(net[0]);
+                var prefixLength = prefix.AddressFamily == System.Net.Sockets.AddressFamily.InterNetworkV6 ? 128 : 32;
+                options.KnownIPNetworks.Add(new IPNetwork(prefix, prefixLength));
+            }
+        }
+    }
+#else
     private static void ProcessKnownNetworks(IConfiguration configuration, ForwardedHeadersOptions options)
     {
         var knownNetworks = configuration[DefaultConfiguration.KnownNetworksKey];
@@ -314,6 +364,7 @@ public static class HttpOverridesExtensions
             }
         }
     }
+#endif
 
     private static void ProcessKnownProxies(IConfiguration configuration, ForwardedHeadersOptions options)
     {

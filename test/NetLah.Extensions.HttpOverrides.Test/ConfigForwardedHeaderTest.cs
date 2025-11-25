@@ -83,11 +83,36 @@ public class ConfigForwardedHeaderTest
         Assert.Equal(ForwardedHeaders.XForwardedHost | ForwardedHeaders.XForwardedProto, options.ForwardedHeaders);
         Assert.Equal(3, options.ForwardLimit);
         Assert.Equal("192.168.1.1,10.2.3.4", string.Join(",", options.KnownProxies));
+#if NET10_0_OR_GREATER
+        Assert.Equal("172.16.0.0/12,100.64.0.0/10", string.Join(",", options.KnownIPNetworks.Select(ipn => $"{ipn.BaseAddress}/{ipn.PrefixLength}")));
+#else
         Assert.Equal("172.16.0.0/12,100.64.0.0/10", string.Join(",", options.KnownNetworks.Select(ipn => $"{ipn.Prefix}/{ipn.PrefixLength}")));
+#endif
         Assert.Equal("host1,host2.example.com,demo.example.com", string.Join(",", options.AllowedHosts));
         Assert.True(options.RequireHeaderSymmetry);
 
         Assert.Equal(LogLevel.Warning, HttpOverridesExtensions.GetLogLevel(configuration, $"{DefaultConfiguration.HttpOverridesKey}:{DefaultConfiguration.HttpOverridesLogLevelKey}"));
         Assert.Equal(LogLevel.Error, HttpOverridesExtensions.GetLogLevel(configuration, $"{DefaultConfiguration.HttpLoggingKey}:{DefaultConfiguration.HttpLoggingLogLevelKey}"));
     }
+
+
+#if NET10_0_OR_GREATER
+    [Fact]
+    public void ConfigureKnownIPNetworksTest()
+    {
+        var configuration = NewConfig(new Dictionary<string, string?>
+        {
+            ["HttpOverrides:KnownIPNetworks"] = "172.16.0.0/12,100.64.0.0/10"
+        });
+
+        var services = new ServiceCollection();
+        HttpOverridesExtensions.AddHttpOverrides(services, configuration);
+        var serviceProvider = services.BuildServiceProvider();
+
+        var options = serviceProvider.GetRequiredService<IOptions<ForwardedHeadersOptions>>().Value;
+
+        Assert.Equal("172.16.0.0/12,100.64.0.0/10", string.Join(",", options.KnownIPNetworks.Select(ipn => $"{ipn.BaseAddress}/{ipn.PrefixLength}")));
+    }
+#endif
+
 }

@@ -20,6 +20,10 @@ public static class DefaultConfiguration
 
     public const string KnownNetworksKey = "KnownNetworks";
     public const string ClearKnownNetworksKey = "ClearKnownNetworks";
+#if NET10_0_OR_GREATER
+    public const string KnownIPNetworksKey = "KnownIPNetworks";
+    public const string ClearKnownIPNetworksKey = "ClearKnownIPNetworks";
+#endif
 
     public const string KnownProxiesKey = "KnownProxies";
     public const string ClearKnownProxiesKey = "ClearKnownProxies";
